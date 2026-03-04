@@ -1,0 +1,36 @@
+# ── Config (never commit real values) ────────────────────────────────────────
+config.json
+.env
+.env.*
+!.env.example
+
+# ── Go build artifacts ────────────────────────────────────────────────────────
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin/
+dist/
+
+# ── Go workspace sum (auto-generated) ────────────────────────────────────────
+go.work.sum
+
+# ── Wire generated injector ───────────────────────────────────────────────────
+wire_gen.go
+
+# ── IDE & OS ──────────────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+
+# ── Logs & coverage ───────────────────────────────────────────────────────────
+*.log
+logs/
+coverage.out
+coverage.html
