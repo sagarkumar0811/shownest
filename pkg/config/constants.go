@@ -9,4 +9,5 @@ const (
 
 	// Config keys
 	DatabaseCredentials = "database"
+	RedisCredentials    = "redis"
 )

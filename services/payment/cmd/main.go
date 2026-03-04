@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/shownest/pkg/cache"
 	"github.com/shownest/pkg/config"
 	"github.com/shownest/pkg/db"
 )
@@ -24,4 +25,12 @@ func main() {
 	defer pool.Close()
 
 	fmt.Println("connected to postgres successfully")
+
+	redisClient, err := cache.New(ctx, provider)
+	if err != nil {
+		log.Fatalf("connect redis: %v", err)
+	}
+	defer redisClient.Close()
+
+	fmt.Println("connected to redis successfully")
 }
