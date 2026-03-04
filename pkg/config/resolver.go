@@ -14,8 +14,8 @@ func NewConfigProvider(ctx context.Context) (ConfigProvider, error) {
 
 	switch env {
 	case EnvironmentProduction, EnvironmentStaging:
-		return NewAWSProvider(), nil
+		return NewAWSProvider()
 	default:
-		return NewLocalProvider(DefaultConfigFile)
+		return NewLocalProvider()
 	}
 }

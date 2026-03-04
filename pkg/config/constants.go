@@ -7,6 +7,6 @@ const (
 	EnvironmentStaging    = "staging"
 	EnvironmentProduction = "production"
 
-	// Default configuration file for local environment
-	DefaultConfigFile = "config.json"
+	// Config keys
+	DatabaseCredentials = "database"
 )
