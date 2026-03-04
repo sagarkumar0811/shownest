@@ -28,6 +28,27 @@ PostgreSQL Server
 │
 ├── postgres (admin)
 │
-└── user (database)
-     └── owned by user_service
+├── user (database)
+│    └── owned by user_service
+│
+├── booking (database)
+│    └── owned by booking_service
+│
+├── catalog (database)
+│    └── owned by catalog_service
+│
+├── merchant (database)
+│    └── owned by merchant_service
+│
+├── payment (database)
+│    └── owned by payment_service
+│
+├── seat (database)
+│    └── owned by seat_service
+│
+├── search (database)
+│    └── owned by search_service
+│
+└── notification (database)
+     └── owned by notification_service
 ```
