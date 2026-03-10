@@ -7,7 +7,7 @@ import (
 
 // NewConfigProvider creates a new ConfigProvider based on the environment variable.
 func NewConfigProvider(ctx context.Context) (ConfigProvider, error) {
-	env := os.Getenv("ENV")
+	env := os.Getenv("env")
 	if env == "" {
 		env = EnvironmentLocal
 	}

@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/shownest/pkg/cache"
 	"github.com/shownest/pkg/config"
@@ -16,13 +18,15 @@ func main() {
 	// Load configuration
 	provider, err := config.NewConfigProvider(ctx)
 	if err != nil {
-		panic("failed to load config provider: " + err.Error())
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	// Initialize logger
 	err = logger.Init(ctx, provider)
 	if err != nil {
-		panic("failed to initialize logger: " + err.Error())
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	defer logger.Sync()
 

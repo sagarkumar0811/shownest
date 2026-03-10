@@ -23,24 +23,24 @@ type Config struct {
 }
 
 func Init(ctx context.Context, provider config.ConfigProvider) error {
-	appName, err := provider.Get(ctx, "APP")
+	appName, err := provider.Get(ctx, "app")
 	if err != nil {
-		return fmt.Errorf("failed to get APP: %w", err)
+		return fmt.Errorf("failed to get app: %w", err)
 	}
 
-	envData, err := provider.Get(ctx, "ENV")
+	envData, err := provider.Get(ctx, "env")
 	if err != nil {
-		return fmt.Errorf("failed to get ENV: %w", err)
+		return fmt.Errorf("failed to get env: %w", err)
 	}
 
-	logDirData, err := provider.Get(ctx, "LOGDIR")
+	logDirData, err := provider.Get(ctx, "logdir")
 	if err != nil {
-		return fmt.Errorf("failed to get LOGDIR: %w", err)
+		return fmt.Errorf("failed to get logdir: %w", err)
 	}
 
-	logLevelData, err := provider.Get(ctx, "LOGLEVEL")
+	logLevelData, err := provider.Get(ctx, "loglevel")
 	if err != nil {
-		return fmt.Errorf("failed to get LOGLEVEL: %w", err)
+		return fmt.Errorf("failed to get loglevel: %w", err)
 	}
 
 	var app, env, logDir, logLevel string
@@ -96,7 +96,7 @@ func initLogger(cfg Config) error {
 	if cfg.Environment == config.EnvironmentLocal {
 		logsDir := cfg.LogDir
 		if logsDir == "" {
-			return fmt.Errorf("LOGDIR is required for local environment")
+			return fmt.Errorf("logdir is required for local environment")
 		}
 
 		if _, err := os.Stat(logsDir); os.IsNotExist(err) {
@@ -119,7 +119,13 @@ func initLogger(cfg Config) error {
 	}
 
 	core := zapcore.NewTee(cores...)
-	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.AddStacktrace(zapcore.ErrorLevel))
+	logger := zap.New(
+		core,
+		zap.AddCaller(),
+		zap.AddCallerSkip(1),
+		zap.AddStacktrace(zapcore.ErrorLevel),
+		zap.Fields(zap.String("app", cfg.ServiceName)),
+	)
 
 	globalLogger = logger
 	zap.ReplaceGlobals(logger)
