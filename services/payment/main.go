@@ -3,34 +3,47 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/shownest/pkg/cache"
 	"github.com/shownest/pkg/config"
 	"github.com/shownest/pkg/db"
+	"github.com/shownest/pkg/logger"
 )
 
 func main() {
 	ctx := context.Background()
 
+	// Load configuration
 	provider, err := config.NewConfigProvider(ctx)
 	if err != nil {
-		log.Fatalf("load config: %v", err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
-	pool, err := db.New(ctx, provider)
+	// Initialize logger
+	err = logger.Init(ctx, provider)
 	if err != nil {
-		log.Fatalf("connect db: %v", err)
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer logger.Sync()
+
+	// Connect to database
+	pool, err := db.Init(ctx, provider)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	defer pool.Close()
 
-	fmt.Println("connected to postgres successfully")
-
-	redisClient, err := cache.New(ctx, provider)
+	// Connect to cache
+	redisClient, err := cache.Init(ctx, provider)
 	if err != nil {
-		log.Fatalf("connect redis: %v", err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	defer redisClient.Close()
 
-	fmt.Println("connected to redis successfully")
+	logger.Info("payment service started successfully")
 }

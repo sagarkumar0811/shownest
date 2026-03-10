@@ -9,7 +9,6 @@ import (
 	"github.com/shownest/pkg/config"
 	"github.com/shownest/pkg/db"
 	"github.com/shownest/pkg/logger"
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -31,21 +30,20 @@ func main() {
 	defer logger.Sync()
 
 	// Connect to database
-	pool, err := db.New(ctx, provider)
+	pool, err := db.Init(ctx, provider)
 	if err != nil {
-		logger.Fatal("failed to connect to database", zap.Error(err))
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	defer pool.Close()
 
-	logger.Info("connected to postgres successfully")
-
-	// Connect to Redis
-	redisClient, err := cache.New(ctx, provider)
+	// Connect to cache
+	redisClient, err := cache.Init(ctx, provider)
 	if err != nil {
-		logger.Fatal("failed to connect to redis", zap.Error(err))
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	defer redisClient.Close()
 
-	logger.Info("connected to redis successfully")
 	logger.Info("user service started successfully")
 }

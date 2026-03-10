@@ -19,8 +19,8 @@ type Config struct {
 	SSLMode  string `json:"sslmode"`
 }
 
-// New loads the DB config from the provider and returns a PostgreSQL connection pool.
-func New(ctx context.Context, provider config.ConfigProvider) (*pgxpool.Pool, error) {
+// Init loads the DB config from the provider and returns a PostgreSQL connection pool.
+func Init(ctx context.Context, provider config.ConfigProvider) (*pgxpool.Pool, error) {
 	raw, err := provider.Get(ctx, config.DatabaseCredentials)
 	if err != nil {
 		return nil, fmt.Errorf("db: get config: %w", err)
