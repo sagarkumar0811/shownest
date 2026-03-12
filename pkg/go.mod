@@ -3,6 +3,7 @@ module github.com/shownest/pkg
 go 1.25.6
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/redis/go-redis/v9 v9.18.0
 	go.uber.org/zap v1.27.0
