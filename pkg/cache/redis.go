@@ -19,7 +19,7 @@ type Config struct {
 
 // Init loads the Redis config from the provider and returns a Redis client.
 func Init(ctx context.Context, provider config.ConfigProvider) (*redis.Client, error) {
-	raw, err := provider.Get(ctx, config.RedisCredentials)
+	raw, err := provider.Get(ctx, config.CacheCredentials)
 	if err != nil {
 		return nil, fmt.Errorf("cache: get config: %w", err)
 	}
