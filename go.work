@@ -2,15 +2,11 @@ go 1.25.6
 
 use (
 	./pkg
-	./services/admin
 	./services/booking
 	./services/catalog
-	./services/merchant
 	./services/notification
 	./services/payment
-	./services/pricing
 	./services/reporting
 	./services/search
-	./services/seat
 	./services/user
 )
