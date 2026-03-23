@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/shownest/payment-service/internal/routes"
 	"github.com/shownest/pkg/cache"
 	"github.com/shownest/pkg/config"
 	"github.com/shownest/pkg/db"
@@ -38,12 +39,17 @@ func main() {
 	defer pool.Close()
 
 	// Connect to cache
-	redisClient, err := cache.Init(ctx, provider)
+	cacheClient, err := cache.Init(ctx, provider)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer redisClient.Close()
+	defer cacheClient.Close()
 
-	logger.Info("payment service started successfully")
+	// Start the server
+	r := routes.InitRoutes()
+	if err := r.Run(":6005"); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
