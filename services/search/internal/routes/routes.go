@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRoutes() *gin.Engine {
+func InitRoutes() error {
 	r := gin.New()
 	r.Use(gin.Recovery())
 
@@ -20,5 +20,5 @@ func InitRoutes() *gin.Engine {
 		}
 	}
 
-	return r
+	return r.Run(":6007")
 }

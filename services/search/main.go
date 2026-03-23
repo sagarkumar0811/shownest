@@ -47,8 +47,7 @@ func main() {
 	defer cacheClient.Close()
 
 	// Start the server
-	r := routes.InitRoutes()
-	if err := r.Run(":6007"); err != nil {
+	if err := routes.InitRoutes(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
