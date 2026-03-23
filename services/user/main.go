@@ -9,6 +9,7 @@ import (
 	"github.com/shownest/pkg/config"
 	"github.com/shownest/pkg/db"
 	"github.com/shownest/pkg/logger"
+	"github.com/shownest/user-service/internal/routes"
 )
 
 func main() {
@@ -45,5 +46,10 @@ func main() {
 	}
 	defer redisClient.Close()
 
-	logger.Info("user service started successfully")
+	// Start the server
+	r := routes.InitRoutes()
+	if err := r.Run(":6001"); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
