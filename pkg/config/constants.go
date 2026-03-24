@@ -10,6 +10,8 @@ const (
 	// Config keys
 	DatabaseCredentials = "database"
 	CacheCredentials    = "cache"
+	AWSCredentials      = "aws"
+	ServiceConfig       = "service"
 
 	// Standard format
 	DateFormat = "2006-01-02"

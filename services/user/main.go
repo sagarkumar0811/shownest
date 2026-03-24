@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/shownest/pkg/cache"
 	"github.com/shownest/pkg/config"
-	"github.com/shownest/pkg/db"
 	"github.com/shownest/pkg/logger"
-	"github.com/shownest/user-service/internal/routes"
+	"github.com/shownest/user-service/wire"
 )
 
 func main() {
@@ -23,31 +21,14 @@ func main() {
 	}
 
 	// Initialize logger
-	err = logger.Init(ctx, provider)
-	if err != nil {
+	if err := logger.Init(ctx, provider); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	defer logger.Sync()
 
-	// Connect to database
-	pool, err := db.Init(ctx, provider)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer pool.Close()
-
-	// Connect to cache
-	cacheClient, err := cache.Init(ctx, provider)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer cacheClient.Close()
-
-	// Start the server
-	if err := routes.InitRoutes(); err != nil {
+	// Wire and start the server
+	if err := wire.InitializeApp(ctx, provider); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

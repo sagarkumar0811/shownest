@@ -17,7 +17,9 @@ var (
 
 // Claims represents the JWT claims containing user information.
 type Claims struct {
-	UserID string `json:"userId"`
+	UserID    string `json:"userId"`
+	Role      string `json:"role"`
+	SessionID string `json:"sessionId"`
 	jwt.RegisteredClaims
 }
 
@@ -39,20 +41,22 @@ func NewService(accessSecret, refreshSecret string, accessTokenDuration, refresh
 	}
 }
 
-// GenerateAccessToken creates a short-lived access token for the given user.
-func (s *Service) GenerateAccessToken(userID string) (string, error) {
-	return s.generateToken(userID, s.accessSecret, s.accessTokenDuration)
+// GenerateAccessToken creates a short-lived access token containing user claims.
+func (s *Service) GenerateAccessToken(userID, role, sessionID string) (string, error) {
+	return s.generateToken(userID, role, sessionID, s.accessSecret, s.accessTokenDuration)
 }
 
-// GenerateRefreshToken creates a long-lived refresh token for the given user.
-func (s *Service) GenerateRefreshToken(userID string) (string, error) {
-	return s.generateToken(userID, s.refreshSecret, s.refreshTokenDuration)
+// GenerateRefreshToken creates a long-lived refresh token that can be used to obtain new access tokens without re-authenticating the user.
+func (s *Service) GenerateRefreshToken(userID, role, sessionID string) (string, error) {
+	return s.generateToken(userID, role, sessionID, s.refreshSecret, s.refreshTokenDuration)
 }
 
-// generateToken is a helper function to create a JWT token with the specified user, secret, and duration.
-func (s *Service) generateToken(userID, secret string, duration time.Duration) (string, error) {
+// generateToken is a helper function to create a JWT token with the specified claims, secret, and duration.
+func (s *Service) generateToken(userID, role, sessionID, secret string, duration time.Duration) (string, error) {
 	claims := &Claims{
-		UserID: userID,
+		UserID:    userID,
+		Role:      role,
+		SessionID: sessionID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
