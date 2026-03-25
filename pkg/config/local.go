@@ -11,7 +11,7 @@ type localProvider struct {
 	configs map[string]json.RawMessage
 }
 
-const configFilePath = "config/config.json"
+const configFilePath = "config.json"
 
 // NewLocalProvider returns a new instance of localProvider which implements the ConfigProvider interface.
 func NewLocalProvider() (ConfigProvider, error) {
