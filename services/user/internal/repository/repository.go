@@ -105,10 +105,10 @@ func (r *Repository) UpdateUserEmail(ctx context.Context, userID string, email *
 	return nil
 }
 
-func (r *Repository) CreateSession(ctx context.Context, userID, tokenHash, deviceInfo, ipAddress string, expiresAt time.Time) (*models.Session, error) {
+func (r *Repository) CreateSession(ctx context.Context, id, userID, tokenHash, deviceInfo, ipAddress string, expiresAt time.Time) (*models.Session, error) {
 	sql, args, err := psql.Insert("sessions").
-		Columns("user_id", "refresh_token_hash", "device_info", "ip_address", "expires_at").
-		Values(userID, tokenHash, deviceInfo, ipAddress, expiresAt).
+		Columns("id", "user_id", "refresh_token_hash", "device_info", "ip_address", "expires_at").
+		Values(id, userID, tokenHash, deviceInfo, ipAddress, expiresAt).
 		Suffix("RETURNING " + utils.JoinColumns(sessionColumns)).
 		ToSql()
 	if err != nil {
