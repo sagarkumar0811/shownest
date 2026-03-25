@@ -34,7 +34,6 @@ func JWTAuth(jwtService *jwt.Service) gin.HandlerFunc {
 		}
 
 		c.Set("userId", claims.UserID)
-		c.Set("role", claims.Role)
 		c.Set("sessionId", claims.SessionID)
 		c.Next()
 	}
