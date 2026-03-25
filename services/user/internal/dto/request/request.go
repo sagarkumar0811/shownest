@@ -18,5 +18,5 @@ type RevokeSessionRequest struct {
 }
 
 type UpdateProfileRequest struct {
-	Email *string `json:"email"`
+	Email *string `json:"email" binding:"omitempty,email"`
 }
