@@ -75,7 +75,7 @@ func (r *Repository) CreateUser(ctx context.Context, phone, role string) (*model
 	sql, args, err := psql.Insert("users").
 		Columns("phone", "role").
 		Values(phone, role).
-		Suffix("RETURNING " + utils.JoinCols(userColumns)).
+		Suffix("RETURNING " + utils.JoinColumns(userColumns)).
 		ToSql()
 	if err != nil {
 		return nil, apperrors.Wrap(apperrors.CodeInternal, "build query", err)
@@ -109,7 +109,7 @@ func (r *Repository) CreateSession(ctx context.Context, userID, tokenHash, devic
 	sql, args, err := psql.Insert("sessions").
 		Columns("user_id", "refresh_token_hash", "device_info", "ip_address", "expires_at").
 		Values(userID, tokenHash, deviceInfo, ipAddress, expiresAt).
-		Suffix("RETURNING " + utils.JoinCols(sessionColumns)).
+		Suffix("RETURNING " + utils.JoinColumns(sessionColumns)).
 		ToSql()
 	if err != nil {
 		return nil, apperrors.Wrap(apperrors.CodeInternal, "build query", err)
