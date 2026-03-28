@@ -16,13 +16,12 @@ func JWTAuth(jwtService *jwt.Service) gin.HandlerFunc {
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			abortWithError(c, apperrors.New(apperrors.CodeUnauthenticated, "authorization header format invalid"))
-			return
+		token := authHeader
+		if parts := strings.SplitN(authHeader, " ", 2); len(parts) == 2 {
+			token = parts[1]
 		}
 
-		claims, err := jwtService.ValidateAccessToken(parts[1])
+		claims, err := jwtService.ValidateAccessToken(token)
 		if err != nil {
 			switch err {
 			case jwt.ErrTokenExpired:
