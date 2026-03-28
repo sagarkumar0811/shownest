@@ -123,9 +123,9 @@ func (r *Repository) CreateSession(ctx context.Context, id, userID, tokenHash, d
 	return &s, nil
 }
 
-func (r *Repository) GetSessionByTokenHash(ctx context.Context, tokenHash string) (*models.Session, error) {
+func (r *Repository) GetSessionByID(ctx context.Context, sessionID string) (*models.Session, error) {
 	sql, args, err := psql.Select(sessionColumns...).From("sessions").
-		Where(sq.Eq{"refresh_token_hash": tokenHash}).
+		Where(sq.Eq{"id": sessionID}).
 		Where("revoked_at IS NULL").
 		Where("expires_at > NOW()").
 		ToSql()
@@ -138,7 +138,7 @@ func (r *Repository) GetSessionByTokenHash(ctx context.Context, tokenHash string
 		if pgxscan.NotFound(err) {
 			return nil, apperrors.New(apperrors.CodeDBNotFound, "session not found")
 		}
-		return nil, apperrors.Wrap(apperrors.CodeDBError, "get session by token hash", err)
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "get session by id", err)
 	}
 	return &s, nil
 }

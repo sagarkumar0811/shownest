@@ -104,10 +104,17 @@ func (uc *UseCase) RefreshToken(ctx context.Context, rawRefreshToken string) (*r
 		return nil, apperrors.New(apperrors.CodeTokenInvalid, "invalid refresh token")
 	}
 
-	tokenHash := utils.HashSHA256(rawRefreshToken)
-	session, err := uc.repo.GetSessionByTokenHash(ctx, tokenHash)
+	session, err := uc.repo.GetSessionByID(ctx, claims.SessionID)
 	if err != nil {
 		return nil, apperrors.New(apperrors.CodeTokenInvalid, "session not found or expired")
+	}
+
+	// Detect refresh token reuse (possible theft) by comparing the hash of the presented token with the stored hash.
+	if session.RefreshTokenHash != utils.HashSHA256(rawRefreshToken) {
+		if err := uc.repo.RevokeSession(ctx, session.ID, session.UserID); err != nil {
+			return nil, apperrors.Wrap(apperrors.CodeInternal, "revoke compromised session", err)
+		}
+		return nil, apperrors.New(apperrors.CodeTokenInvalid, "refresh token reuse detected; session revoked")
 	}
 
 	user, err := uc.repo.GetUserByID(ctx, claims.UserID)
