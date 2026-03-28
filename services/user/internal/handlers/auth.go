@@ -16,6 +16,11 @@ func (h *Handler) SendOTP(c *gin.Context) {
 		return
 	}
 
+	if err := req.Validate(); err != nil {
+		utils.WriteError(c, apperrors.New(apperrors.CodeInvalidArgument, err.Error()))
+		return
+	}
+
 	if err := h.usecase.SendOTP(c.Request.Context(), req.Phone); err != nil {
 		utils.WriteError(c, err)
 		return
@@ -27,6 +32,11 @@ func (h *Handler) SendOTP(c *gin.Context) {
 func (h *Handler) VerifyOTP(c *gin.Context) {
 	var req request.VerifyOTPRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteError(c, apperrors.New(apperrors.CodeInvalidArgument, err.Error()))
+		return
+	}
+
+	if err := req.Validate(); err != nil {
 		utils.WriteError(c, apperrors.New(apperrors.CodeInvalidArgument, err.Error()))
 		return
 	}

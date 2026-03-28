@@ -4,17 +4,62 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"math/big"
 	"regexp"
+	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 	apperrors "github.com/shownest/pkg/errors"
 )
 
-func IsValidPhone(phone string) bool {
-	e164Regex := regexp.MustCompile(`^\+[1-9]\d{7,14}$`)
-	return e164Regex.MatchString(phone)
+func FilterMobileNumber(phone string) (string, error) {
+
+	// strip whitespace
+	rr := make([]rune, 0, len(phone))
+	for _, r := range phone {
+		if !unicode.IsSpace(r) {
+			rr = append(rr, r)
+		}
+	}
+	trimmed := string(rr)
+
+	// resolve scientific notation (e.g. 9.1234e9)
+	if strings.ContainsAny(trimmed, "eE") {
+		f, err := strconv.ParseFloat(trimmed, 64)
+		if err != nil {
+			return phone, err
+		}
+		trimmed = fmt.Sprintf("%.0f", f)
+	}
+
+	flt, _, err := big.ParseFloat(trimmed, 10, 0, big.ToNearestEven)
+	if err != nil {
+		return phone, err
+	}
+	k := new(big.Int)
+	k, _ = flt.Int(k)
+
+	re := regexp.MustCompile(`[0-9]+`)
+	s := re.FindAllString(k.String(), -1)
+	if len(s) == 0 {
+		return "", errors.New("invalid phone format")
+	}
+
+	str := s[0]
+	if len(str) < 10 || len(str) > 12 {
+		return str, errors.New("invalid phone length")
+	}
+
+	last10 := str[len(str)-10:]
+	if match, _ := regexp.MatchString(`^[6789][0-9]{9}$`, last10); !match {
+		return str, errors.New("invalid phone number")
+	}
+
+	return last10, nil
 }
 
 func GenerateOTP() (string, error) {

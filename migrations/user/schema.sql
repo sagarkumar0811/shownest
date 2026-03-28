@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     user_id            UUID        NOT NULL,
     refresh_token_hash CHAR(64)    NOT NULL,
     device_info        TEXT,
-    ip_address         INET,
+    ip_address         TEXT,
     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at         TIMESTAMPTZ NOT NULL,
     revoked_at         TIMESTAMPTZ
@@ -60,3 +60,17 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX idx_sessions_user_id    ON sessions (user_id);
 CREATE INDEX idx_sessions_token_hash ON sessions (refresh_token_hash);
 CREATE INDEX idx_sessions_active     ON sessions (user_id, expires_at) WHERE revoked_at IS NULL;
+
+-- Allow role to access schema
+GRANT USAGE ON SCHEMA public TO user_service;
+
+-- CRUD on all existing tables
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON ALL TABLES IN SCHEMA public
+TO user_service;
+
+-- Auto-grant CRUD on future tables created by postgres
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres
+IN SCHEMA public
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON TABLES TO user_service;

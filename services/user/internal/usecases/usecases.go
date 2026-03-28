@@ -31,11 +31,7 @@ func New(repo *repository.Repository, cache *redis.Client, sns *pkgaws.SNSClient
 }
 
 func (uc *UseCase) SendOTP(ctx context.Context, phone string) error {
-	if !utils.IsValidPhone(phone) {
-		return apperrors.New(apperrors.CodeInvalidArgument, "phone must be in E.164 format (e.g. +919876543210)")
-	}
-
-	attKey := utils.OTPAttemptsPrefix + phone
+	attKey := utils.OTPAttemptsPrefix + phone // otp_attempts:{phone}
 	count, err := uc.cache.Incr(ctx, attKey).Result()
 	if err != nil {
 		return apperrors.Wrap(apperrors.CodeInternal, "rate limit check failed", err)
@@ -53,7 +49,7 @@ func (uc *UseCase) SendOTP(ctx context.Context, phone string) error {
 	}
 
 	hashed := utils.HashSHA256(otp)
-	otpKey := utils.OTPKeyPrefix + phone
+	otpKey := utils.OTPKeyPrefix + phone // otp:{phone}
 	if err := uc.cache.Set(ctx, otpKey, hashed, utils.OTPTTL).Err(); err != nil {
 		return apperrors.Wrap(apperrors.CodeInternal, "store otp", err)
 	}
@@ -68,10 +64,6 @@ func (uc *UseCase) SendOTP(ctx context.Context, phone string) error {
 }
 
 func (uc *UseCase) VerifyOTP(ctx context.Context, req request.VerifyOTPRequest, deviceInfo, ipAddress string) (*response.AuthResponse, error) {
-	if !utils.IsValidPhone(req.Phone) {
-		return nil, apperrors.New(apperrors.CodeInvalidArgument, "invalid phone format")
-	}
-
 	otpKey := utils.OTPKeyPrefix + req.Phone
 	storedHash, err := uc.cache.Get(ctx, otpKey).Result()
 	if err != nil {
