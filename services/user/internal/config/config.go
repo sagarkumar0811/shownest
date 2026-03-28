@@ -37,11 +37,11 @@ func Load(ctx context.Context, provider pkgconfig.ConfigProvider) (*Config, erro
 		return nil, fmt.Errorf("config: parse service config: %w", err)
 	}
 
-	accessExpiry, err := time.ParseDuration(rc.JWTAccessExpiry)
+	accessExpiry, err := time.ParseDuration(rc.JWTAccessExpiry) // access token expire: 15m
 	if err != nil {
 		return nil, fmt.Errorf("config: parse jwt_access_expiry %q: %w", rc.JWTAccessExpiry, err)
 	}
-	refreshExpiry, err := time.ParseDuration(rc.JWTRefreshExpiry)
+	refreshExpiry, err := time.ParseDuration(rc.JWTRefreshExpiry) // refresh token expire: 7d
 	if err != nil {
 		return nil, fmt.Errorf("config: parse jwt_refresh_expiry %q: %w", rc.JWTRefreshExpiry, err)
 	}
