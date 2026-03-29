@@ -4,6 +4,7 @@ use (
 	./pkg
 	./services/booking
 	./services/catalog
+	./services/merchant
 	./services/notification
 	./services/payment
 	./services/reporting

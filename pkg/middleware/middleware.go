@@ -4,13 +4,14 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	constants "github.com/shownest/pkg"
 	apperrors "github.com/shownest/pkg/errors"
 	"github.com/shownest/pkg/jwt"
 )
 
 func JWTAuth(jwtService *jwt.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
+		authHeader := c.GetHeader(constants.AuthorizationKey)
 		if authHeader == "" {
 			abortWithError(c, apperrors.New(apperrors.CodeUnauthenticated, "authorization header required"))
 			return
@@ -34,6 +35,18 @@ func JWTAuth(jwtService *jwt.Service) gin.HandlerFunc {
 
 		c.Set("userId", claims.UserID)
 		c.Set("sessionId", claims.SessionID)
+		c.Set("role", claims.Role)
+		c.Next()
+	}
+}
+
+func RequireMerchant() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, _ := c.Get("role")
+		if role != constants.RoleMerchant {
+			abortWithError(c, apperrors.New(apperrors.CodePermissionDenied, "merchant access required"))
+			return
+		}
 		c.Next()
 	}
 }
