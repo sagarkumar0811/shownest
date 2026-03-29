@@ -28,6 +28,10 @@ func NewHex(n int) (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
+func GetS3Key(service string, parts ...string) string {
+	return service + "/" + strings.Join(parts, "/")
+}
+
 func JoinColumns(columns []string) string {
 	var sb strings.Builder
 	for i, c := range columns {
