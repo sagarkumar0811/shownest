@@ -16,23 +16,28 @@ import (
 )
 
 func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error {
+
+	// Initialize database connection pool
 	pool, err := db.Init(ctx, provider)
 	if err != nil {
 		return fmt.Errorf("wire: db: %w", err)
 	}
 	defer pool.Close()
 
-	awsConfig, mockMode, err := aws.Init(ctx, provider)
+	// Load AWS configuration
+	awsCfg, cfg, err := aws.Init(ctx, provider)
 	if err != nil {
 		return fmt.Errorf("wire: aws: %w", err)
 	}
 
+	// Load service config
 	serviceConfig, err := config.Load(ctx, provider)
 	if err != nil {
 		return fmt.Errorf("wire: service config: %w", err)
 	}
 
-	s3Client := aws.NewS3Client(awsConfig, serviceConfig.S3Bucket, mockMode)
+	// Initialize AWS clients and JWT service
+	s3Client := aws.NewS3Client(awsCfg, cfg.S3.Bucket, cfg.MockMode)
 	jwtService := jwt.NewService(
 		serviceConfig.JWTAccessSecret,
 		serviceConfig.JWTRefreshSecret,
@@ -40,6 +45,7 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 		serviceConfig.JWTRefreshExpiry,
 	)
 
+	// Initialize repository, use cases, and handlers
 	repo := repository.New(pool)
 	usecase := usecases.New(repo, s3Client, serviceConfig)
 	handler := handlers.New(usecase)

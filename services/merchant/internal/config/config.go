@@ -16,7 +16,6 @@ type Config struct {
 	JWTRefreshSecret string
 	JWTAccessExpiry  time.Duration
 	JWTRefreshExpiry time.Duration
-	S3Bucket         string
 }
 
 type rawConfig struct {
@@ -26,7 +25,6 @@ type rawConfig struct {
 	JWTRefreshSecret string `json:"jwtRefreshSecret"`
 	JWTAccessExpiry  string `json:"jwtAccessExpiry"`
 	JWTRefreshExpiry string `json:"jwtRefreshExpiry"`
-	S3Bucket         string `json:"s3Bucket"`
 }
 
 func Load(ctx context.Context, provider pkgconfig.ConfigProvider) (*Config, error) {
@@ -56,6 +54,5 @@ func Load(ctx context.Context, provider pkgconfig.ConfigProvider) (*Config, erro
 		JWTRefreshSecret: rc.JWTRefreshSecret,
 		JWTAccessExpiry:  accessExpiry,
 		JWTRefreshExpiry: refreshExpiry,
-		S3Bucket:         rc.S3Bucket,
 	}, nil
 }

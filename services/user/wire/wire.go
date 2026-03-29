@@ -33,7 +33,7 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 	defer cacheClient.Close()
 
 	// Load AWS configuration
-	awsConfig, mockMode, err := aws.Init(ctx, provider)
+	awsCfg, cfg, err := aws.Init(ctx, provider)
 	if err != nil {
 		return fmt.Errorf("wire: aws: %w", err)
 	}
@@ -44,7 +44,8 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 		return fmt.Errorf("wire: service config: %w", err)
 	}
 
-	snsClient := aws.NewSNSClient(awsConfig, mockMode)
+	// Initialize AWS clients and JWT service
+	snsClient := aws.NewSNSClient(awsCfg, cfg.MockMode)
 	jwtService := jwt.NewService(
 		serviceConfig.JWTAccessSecret,
 		serviceConfig.JWTRefreshSecret,
