@@ -10,6 +10,7 @@ import (
 )
 
 type Config struct {
+	App              string
 	Port             string
 	JWTAccessSecret  string
 	JWTRefreshSecret string
@@ -19,6 +20,7 @@ type Config struct {
 }
 
 type rawConfig struct {
+	App              string `json:"app"`
 	Port             string `json:"port"`
 	JWTAccessSecret  string `json:"jwtAccessSecret"`
 	JWTRefreshSecret string `json:"jwtRefreshSecret"`
@@ -48,6 +50,7 @@ func Load(ctx context.Context, provider pkgconfig.ConfigProvider) (*Config, erro
 	}
 
 	return &Config{
+		App:              rc.App,
 		Port:             rc.Port,
 		JWTAccessSecret:  rc.JWTAccessSecret,
 		JWTRefreshSecret: rc.JWTRefreshSecret,

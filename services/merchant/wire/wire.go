@@ -41,7 +41,7 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 	)
 
 	repo := repository.New(pool)
-	usecase := usecases.New(repo, s3Client)
+	usecase := usecases.New(repo, s3Client, serviceConfig)
 	handler := handlers.New(usecase)
 
 	return routes.InitRoutes(routes.Config{

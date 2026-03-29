@@ -23,37 +23,26 @@ type Config struct {
 }
 
 func Init(ctx context.Context, provider config.ConfigProvider) error {
-	appName, err := provider.Get(ctx, "app")
+	raw, err := provider.Get(ctx, "service")
 	if err != nil {
-		return fmt.Errorf("failed to get app: %w", err)
+		return fmt.Errorf("failed to get service config: %w", err)
 	}
 
-	envData, err := provider.Get(ctx, "env")
-	if err != nil {
-		return fmt.Errorf("failed to get env: %w", err)
+	var rc struct {
+		App      string `json:"app"`
+		Env      string `json:"env"`
+		LogDir   string `json:"logdir"`
+		LogLevel string `json:"loglevel"`
 	}
-
-	logDirData, err := provider.Get(ctx, "logdir")
-	if err != nil {
-		return fmt.Errorf("failed to get logdir: %w", err)
+	if err := json.Unmarshal(raw, &rc); err != nil {
+		return fmt.Errorf("failed to parse service config: %w", err)
 	}
-
-	logLevelData, err := provider.Get(ctx, "loglevel")
-	if err != nil {
-		return fmt.Errorf("failed to get loglevel: %w", err)
-	}
-
-	var app, env, logDir, logLevel string
-	json.Unmarshal(appName, &app)
-	json.Unmarshal(envData, &env)
-	json.Unmarshal(logDirData, &logDir)
-	json.Unmarshal(logLevelData, &logLevel)
 
 	cfg := Config{
-		Environment: env,
-		ServiceName: app,
-		LogDir:      logDir,
-		LogLevel:    logLevel,
+		Environment: rc.Env,
+		ServiceName: rc.App,
+		LogDir:      rc.LogDir,
+		LogLevel:    rc.LogLevel,
 	}
 
 	return initLogger(cfg)
