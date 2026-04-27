@@ -8,11 +8,11 @@ CREATE TABLE IF NOT EXISTS merchants (
     user_id       UUID         NOT NULL,
     business_name VARCHAR(255) NOT NULL,
     category      VARCHAR(50)  NOT NULL
-                  CHECK (category IN ('cinema', 'comedy', 'theatre', 'sports', 'music', 'poetry', 'exhibition', 'other')),
+                  CHECK (category IN ('cinema', 'comedy', 'theatre', 'sports', 'music', 'dance', 'poetry', 'exhibition', 'other')),
     contact_phone VARCHAR(15)  NOT NULL,
     contact_email VARCHAR(255) NOT NULL,
     status        VARCHAR(30)  NOT NULL DEFAULT 'draft'
-                  CHECK (status IN ('draft', 'pending_approval', 'active', 'rejected', 'suspended')),
+                  CHECK (status IN ('draft', 'pending', 'active', 'rejected', 'suspended')),
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     deleted_at    TIMESTAMPTZ,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS halls (
     name       VARCHAR(255) NOT NULL,
     capacity   INTEGER      NOT NULL CHECK (capacity > 0),
     hall_type  VARCHAR(30)  NOT NULL
-               CHECK (hall_type IN ('auditorium', 'open_stage', 'lounge', 'outdoor', 'arena', 'multiplex_screen')),
+               CHECK (hall_type IN ('auditorium', 'openstage', 'lounge', 'outdoor', 'arena', 'multiplexscreen')),
     created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS merchant_documents (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     merchant_id   UUID        NOT NULL REFERENCES merchants(id),
     document_type VARCHAR(50) NOT NULL
-                  CHECK (document_type IN ('gst_certificate', 'pan', 'trade_license')),
+                  CHECK (document_type IN ('gstcertificate', 'pan', 'tradelicense')),
     s3_key        TEXT        NOT NULL,
     verified_at   TIMESTAMPTZ,
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()

@@ -1,11 +1,11 @@
 package utils
 
 const (
-	MerchantStatusDraft     = "Draft"     // not submitted for review yet
-	MerchantStatusPending   = "Pending"   // pending review
-	MerchantStatusActive    = "Active"    // approved and active
-	MerchantStatusRejected  = "Rejected"  // rejected after review
-	MerchantStatusSuspended = "Suspended" // temporarily suspended
+	MerchantStatusDraft     = "draft"
+	MerchantStatusPending   = "pending"
+	MerchantStatusActive    = "active"
+	MerchantStatusRejected  = "rejected"
+	MerchantStatusSuspended = "suspended"
 )
 
 var ValidCategories = map[string]bool{
