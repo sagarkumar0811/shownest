@@ -10,6 +10,7 @@ import (
 	"github.com/shownest/merchant-service/internal/routes"
 	"github.com/shownest/merchant-service/internal/usecases"
 	"github.com/shownest/pkg/aws"
+	"github.com/shownest/pkg/cache"
 	pkgconfig "github.com/shownest/pkg/config"
 	"github.com/shownest/pkg/db"
 	"github.com/shownest/pkg/jwt"
@@ -23,6 +24,13 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 		return fmt.Errorf("wire: db: %w", err)
 	}
 	defer pool.Close()
+
+	// Initialize cache client
+	cacheClient, err := cache.Init(ctx, provider)
+	if err != nil {
+		return fmt.Errorf("wire: cache: %w", err)
+	}
+	defer cacheClient.Close()
 
 	// Load AWS configuration
 	awsCfg, cfg, err := aws.Init(ctx, provider)
@@ -53,6 +61,7 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 	return routes.InitRoutes(routes.Config{
 		Handler:    handler,
 		JWTService: jwtService,
+		Cache:      cacheClient,
 		Port:       serviceConfig.Port,
 	})
 }

@@ -9,7 +9,7 @@ const (
 	OTPAttemptsTTL    = 1 * time.Hour
 	MaxOTPAttempts    = 5
 
-	RefreshTokenDuration = 30 * 24 * time.Hour
+	RefreshTokenDuration = 7 * 24 * time.Hour
 )
 
 const (

@@ -61,6 +61,7 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 	return routes.InitRoutes(routes.Config{
 		Handler:    handler,
 		JWTService: jwtService,
+		Cache:      cacheClient,
 		Port:       serviceConfig.Port,
 	})
 }
