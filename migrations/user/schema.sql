@@ -1,10 +1,7 @@
--- Add pgcrypto extension for UUID generation and hashing
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Set the default time zone for the database
 SET TIME ZONE 'Asia/Kolkata';
 
--- Users Table
 CREATE TABLE IF NOT EXISTS users (
     id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     phone         VARCHAR(15) NOT NULL,
@@ -23,13 +20,11 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT uq_users_google_id UNIQUE (google_id)
 );
 
--- Indexes for Users Table
 CREATE INDEX idx_users_phone     ON users (phone)     WHERE deleted_at IS NULL;
 CREATE INDEX idx_users_email     ON users (email)     WHERE email IS NOT NULL AND deleted_at IS NULL;
 CREATE INDEX idx_users_google_id ON users (google_id) WHERE google_id IS NOT NULL AND deleted_at IS NULL;
 CREATE INDEX idx_users_status    ON users (status)    WHERE deleted_at IS NULL;
 
--- Trigger to update the updated_at timestamp on user updates
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -38,13 +33,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create trigger for users table
 CREATE TRIGGER trg_users_updated_at
     BEFORE UPDATE ON users
     FOR EACH ROW
     EXECUTE FUNCTION set_updated_at();
 
--- Sessions Table
 CREATE TABLE IF NOT EXISTS sessions (
     id                 UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id            UUID        NOT NULL,
@@ -56,20 +49,16 @@ CREATE TABLE IF NOT EXISTS sessions (
     revoked_at         TIMESTAMPTZ
 );
 
--- Indexes for Sessions Table
 CREATE INDEX idx_sessions_user_id    ON sessions (user_id);
 CREATE INDEX idx_sessions_token_hash ON sessions (refresh_token_hash);
 CREATE INDEX idx_sessions_active     ON sessions (user_id, expires_at) WHERE revoked_at IS NULL;
 
--- Allow role to access schema
 GRANT USAGE ON SCHEMA public TO user_service;
 
--- CRUD on all existing tables
 GRANT SELECT, INSERT, UPDATE, DELETE
 ON ALL TABLES IN SCHEMA public
 TO user_service;
 
--- Auto-grant CRUD on future tables created by postgres
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres
 IN SCHEMA public
 GRANT SELECT, INSERT, UPDATE, DELETE
