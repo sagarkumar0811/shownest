@@ -18,7 +18,6 @@ import (
 
 func FilterMobileNumber(phone string) (string, error) {
 
-	// strip whitespace
 	rr := make([]rune, 0, len(phone))
 	for _, r := range phone {
 		if !unicode.IsSpace(r) {
@@ -27,7 +26,6 @@ func FilterMobileNumber(phone string) (string, error) {
 	}
 	trimmed := string(rr)
 
-	// resolve scientific notation (e.g. 9.1234e9)
 	if strings.ContainsAny(trimmed, "eE") {
 		f, err := strconv.ParseFloat(trimmed, 64)
 		if err != nil {
@@ -84,8 +82,22 @@ func UserAgent(c *gin.Context) string {
 	return c.GetHeader("User-Agent")
 }
 
-func NewUUID() (string, error)             { return pkgutils.NewUUID() }
-func JoinColumns(columns []string) string  { return pkgutils.JoinColumns(columns) }
-func MustUserID(c *gin.Context) string     { return pkgutils.MustUserID(c) }
-func ClientIP(c *gin.Context) string       { return pkgutils.ClientIP(c) }
-func WriteError(c *gin.Context, err error) { pkgutils.WriteError(c, err) }
+func NewUUID() (string, error) {
+	return pkgutils.NewUUID()
+}
+
+func JoinColumns(columns []string) string {
+	return pkgutils.JoinColumns(columns)
+}
+
+func MustUserID(c *gin.Context) string {
+	return pkgutils.MustUserID(c)
+}
+
+func ClientIP(c *gin.Context) string {
+	return pkgutils.ClientIP(c)
+}
+
+func WriteError(c *gin.Context, err error) {
+	pkgutils.WriteError(c, err)
+}
