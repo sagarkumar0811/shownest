@@ -39,13 +39,12 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 		return fmt.Errorf("wire: service config: %w", err)
 	}
 
+	jwtService, err := jwt.Init(ctx, provider)
+	if err != nil {
+		return fmt.Errorf("wire: jwt: %w", err)
+	}
+
 	s3Client := aws.NewS3Client(awsCfg, awsExtCfg.S3.Bucket, awsExtCfg.MockMode)
-	jwtService := jwt.NewService(
-		serviceConfig.JWTAccessSecret,
-		serviceConfig.JWTRefreshSecret,
-		serviceConfig.JWTAccessExpiry,
-		serviceConfig.JWTRefreshExpiry,
-	)
 
 	repo := repository.New(pool)
 	usecase := usecases.New(repo, s3Client, cacheClient, serviceConfig)

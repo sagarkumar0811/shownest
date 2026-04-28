@@ -1,10 +1,14 @@
 package jwt
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/shownest/pkg/config"
 )
 
 // Errors related to JWT token validation.
@@ -23,32 +27,61 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// Service handles JWT token operations.
-type Service struct {
-	accessSecret         string
-	refreshSecret        string
-	accessTokenDuration  time.Duration
-	refreshTokenDuration time.Duration
+type Config struct {
+	AccessSecret  string        `json:"accessSecret"`
+	RefreshSecret string        `json:"refreshSecret"`
+	AccessExpiry  time.Duration `json:"accessExpiry"`
+	RefreshExpiry time.Duration `json:"refreshExpiry"`
 }
 
-// NewService creates a new JWT service with the provided secrets and token durations.
-func NewService(accessSecret, refreshSecret string, accessTokenDuration, refreshTokenDuration time.Duration) *Service {
-	return &Service{
-		accessSecret:         accessSecret,
-		refreshSecret:        refreshSecret,
-		accessTokenDuration:  accessTokenDuration,
-		refreshTokenDuration: refreshTokenDuration,
+func (c *Config) UnmarshalJSON(data []byte) error {
+	var raw struct {
+		AccessSecret  string `json:"accessSecret"`
+		RefreshSecret string `json:"refreshSecret"`
+		AccessExpiry  string `json:"accessExpiry"`
+		RefreshExpiry string `json:"refreshExpiry"`
 	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	var err error
+	c.AccessSecret = raw.AccessSecret
+	c.RefreshSecret = raw.RefreshSecret
+	if c.AccessExpiry, err = time.ParseDuration(raw.AccessExpiry); err != nil {
+		return fmt.Errorf("parse accessExpiry %q: %w", raw.AccessExpiry, err)
+	}
+	if c.RefreshExpiry, err = time.ParseDuration(raw.RefreshExpiry); err != nil {
+		return fmt.Errorf("parse refreshExpiry %q: %w", raw.RefreshExpiry, err)
+	}
+	return nil
+}
+
+func Init(ctx context.Context, provider config.ConfigProvider) (*Service, error) {
+	raw, err := provider.Get(ctx, config.JWTConfig)
+	if err != nil {
+		return nil, fmt.Errorf("jwt: get config: %w", err)
+	}
+
+	var cfg Config
+	if err := json.Unmarshal(raw, &cfg); err != nil {
+		return nil, fmt.Errorf("jwt: parse config: %w", err)
+	}
+
+	return &Service{Config: cfg}, nil
+}
+
+type Service struct {
+	Config Config
 }
 
 // GenerateAccessToken creates a short-lived access token containing user claims.
 func (s *Service) GenerateAccessToken(userID, role, sessionID string) (string, error) {
-	return s.generateToken(userID, role, sessionID, s.accessSecret, s.accessTokenDuration)
+	return s.generateToken(userID, role, sessionID, s.Config.AccessSecret, s.Config.AccessExpiry)
 }
 
 // GenerateRefreshToken creates a long-lived refresh token that can be used to obtain new access tokens without re-authenticating the user.
 func (s *Service) GenerateRefreshToken(userID, role, sessionID string) (string, error) {
-	return s.generateToken(userID, role, sessionID, s.refreshSecret, s.refreshTokenDuration)
+	return s.generateToken(userID, role, sessionID, s.Config.RefreshSecret, s.Config.RefreshExpiry)
 }
 
 // generateToken is a helper function to create a JWT token with the specified claims, secret, and duration.
@@ -69,12 +102,12 @@ func (s *Service) generateToken(userID, role, sessionID, secret string, duration
 
 // ValidateAccessToken validates an access token and returns its claims.
 func (s *Service) ValidateAccessToken(tokenString string) (*Claims, error) {
-	return s.validateToken(tokenString, s.accessSecret)
+	return s.validateToken(tokenString, s.Config.AccessSecret)
 }
 
 // ValidateRefreshToken validates a refresh token and returns its claims.
 func (s *Service) ValidateRefreshToken(tokenString string) (*Claims, error) {
-	return s.validateToken(tokenString, s.refreshSecret)
+	return s.validateToken(tokenString, s.Config.RefreshSecret)
 }
 
 // validateToken is a helper function to validate a token with the given secret and return its claims.

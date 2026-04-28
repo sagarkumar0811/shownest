@@ -44,14 +44,14 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 		return fmt.Errorf("wire: service config: %w", err)
 	}
 
+	// Initialize JWT service
+	jwtService, err := jwt.Init(ctx, provider)
+	if err != nil {
+		return fmt.Errorf("wire: jwt: %w", err)
+	}
+
 	// Initialize AWS clients and JWT service
 	s3Client := aws.NewS3Client(awsCfg, cfg.S3.Bucket, cfg.MockMode)
-	jwtService := jwt.NewService(
-		serviceConfig.JWTAccessSecret,
-		serviceConfig.JWTRefreshSecret,
-		serviceConfig.JWTAccessExpiry,
-		serviceConfig.JWTRefreshExpiry,
-	)
 
 	// Initialize repository, use cases, and handlers
 	repo := repository.New(pool)

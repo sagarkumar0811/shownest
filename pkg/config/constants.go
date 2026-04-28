@@ -12,6 +12,7 @@ const (
 	CacheCredentials    = "cache"
 	AWSCredentials      = "aws"
 	ServiceConfig       = "service"
+	JWTConfig           = "jwt"
 
 	// Standard format
 	DateFormat = "2006-01-02"
