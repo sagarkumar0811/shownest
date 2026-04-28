@@ -15,7 +15,7 @@ config.json
 bin/
 dist/
 
-# ── Go workspace sum (auto-generated) ────────────────────────────────────────
+# ── Go workspace sum (auto-generated) ─────────────────────────────────────────
 go.work.sum
 
 # ── Wire generated injector ───────────────────────────────────────────────────
@@ -35,5 +35,8 @@ logs/
 coverage.out
 coverage.html
 
-# ── Miscellaneous ────────────────────────────────────────────────────────────
+# ── Miscellaneous ─────────────────────────────────────────────────────────────
 *.pdf
+
+# ── Output from graph generation (if any) ─────────────────────────────────────
+graphify-out
