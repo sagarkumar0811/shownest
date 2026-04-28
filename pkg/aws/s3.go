@@ -13,16 +13,19 @@ import (
 
 type S3Client struct {
 	presign  *s3.PresignClient
+	svc      *s3.Client
 	bucket   string
 	mockMode bool
 }
 
 func NewS3Client(cfg awssdk.Config, bucket string, mockMode bool) *S3Client {
 	var pc *s3.PresignClient
+	var svc *s3.Client
 	if !mockMode {
-		pc = s3.NewPresignClient(s3.NewFromConfig(cfg))
+		svc = s3.NewFromConfig(cfg)
+		pc = s3.NewPresignClient(svc)
 	}
-	return &S3Client{presign: pc, bucket: bucket, mockMode: mockMode}
+	return &S3Client{presign: pc, svc: svc, bucket: bucket, mockMode: mockMode}
 }
 
 func (s *S3Client) PresignPutURL(ctx context.Context, key string, ttl time.Duration) (string, error) {
@@ -42,4 +45,22 @@ func (s *S3Client) PresignPutURL(ctx context.Context, key string, ttl time.Durat
 		return "", fmt.Errorf("s3: presign put %s: %w", key, err)
 	}
 	return req.URL, nil
+}
+
+func (s *S3Client) DeleteObject(ctx context.Context, key string) error {
+	if s.mockMode {
+		logger.WithContext(ctx).Info("[S3 MOCK] delete object",
+			zap.String("bucket", s.bucket),
+			zap.String("key", key),
+		)
+		return nil
+	}
+	_, err := s.svc.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: awssdk.String(s.bucket),
+		Key:    awssdk.String(key),
+	})
+	if err != nil {
+		return fmt.Errorf("s3: delete %s: %w", key, err)
+	}
+	return nil
 }

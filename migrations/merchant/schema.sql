@@ -63,7 +63,8 @@ CREATE TABLE IF NOT EXISTS merchant_documents (
                   CHECK (document_type IN ('gstcertificate', 'pan', 'tradelicense')),
     s3_key        TEXT        NOT NULL,
     verified_at   TIMESTAMPTZ,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_merchant_documents_type UNIQUE (merchant_id, document_type)
 );
 
 CREATE INDEX idx_merchant_documents_merchant_id ON merchant_documents (merchant_id);

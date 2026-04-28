@@ -12,6 +12,8 @@ import (
 	"github.com/shownest/merchant-service/internal/utils"
 	pkgaws "github.com/shownest/pkg/aws"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type UseCase struct {
@@ -185,10 +187,26 @@ func (uc *UseCase) ConfirmDocument(ctx context.Context, userID string, req reque
 	if err != nil {
 		return nil, err
 	}
+
+	oldDoc, err := uc.repo.GetDocumentByMerchantAndType(ctx, merchant.ID, req.DocumentType)
+	if err != nil && !apperrors.HasCode(err, apperrors.CodeDBNotFound) {
+		return nil, err
+	}
+
 	d, err := uc.repo.CreateDocument(ctx, merchant.ID, req.DocumentType, req.S3Key)
 	if err != nil {
 		return nil, err
 	}
+
+	if oldDoc != nil && oldDoc.S3Key != req.S3Key {
+		if delErr := uc.s3.DeleteObject(ctx, oldDoc.S3Key); delErr != nil {
+			logger.WithContext(ctx).Warn("failed to delete old document from S3",
+				zap.String("s3_key", oldDoc.S3Key),
+				zap.Error(delErr),
+			)
+		}
+	}
+
 	info := mapper.ToDocumentInfo(d)
 	return &info, nil
 }

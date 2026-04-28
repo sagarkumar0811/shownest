@@ -235,11 +235,29 @@ func (r *Repository) GetHallsByVenueID(ctx context.Context, venueID string) ([]m
 	return halls, nil
 }
 
+func (r *Repository) GetDocumentByMerchantAndType(ctx context.Context, merchantID, docType string) (*models.MerchantDocument, error) {
+	sql, args, err := psql.Select(documentColumns...).From("merchant_documents").
+		Where(sq.Eq{"merchant_id": merchantID, "document_type": docType}).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeInternal, "build query", err)
+	}
+
+	var d models.MerchantDocument
+	if err := pgxscan.Get(ctx, r.db, &d, sql, args...); err != nil {
+		if pgxscan.NotFound(err) {
+			return nil, apperrors.New(apperrors.CodeDBNotFound, "document not found")
+		}
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "get document by merchant and type", err)
+	}
+	return &d, nil
+}
+
 func (r *Repository) CreateDocument(ctx context.Context, merchantID, docType, s3Key string) (*models.MerchantDocument, error) {
 	sql, args, err := psql.Insert("merchant_documents").
 		Columns("merchant_id", "document_type", "s3_key").
 		Values(merchantID, docType, s3Key).
-		Suffix("RETURNING " + utils.JoinColumns(documentColumns)).
+		Suffix("ON CONFLICT (merchant_id, document_type) DO UPDATE SET s3_key = EXCLUDED.s3_key, verified_at = NULL, created_at = NOW() RETURNING " + utils.JoinColumns(documentColumns)).
 		ToSql()
 	if err != nil {
 		return nil, apperrors.Wrap(apperrors.CodeInternal, "build query", err)
@@ -248,7 +266,7 @@ func (r *Repository) CreateDocument(ctx context.Context, merchantID, docType, s3
 	rows, _ := r.db.Query(ctx, sql, args...)
 	d, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[models.MerchantDocument])
 	if err != nil {
-		return nil, apperrors.Wrap(apperrors.CodeDBError, "create document", err)
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "upsert document", err)
 	}
 	return &d, nil
 }
