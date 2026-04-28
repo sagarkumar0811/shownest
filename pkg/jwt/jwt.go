@@ -27,6 +27,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// Config holds the configuration for JWT token generation and validation.
 type Config struct {
 	AccessSecret  string        `json:"accessSecret"`
 	RefreshSecret string        `json:"refreshSecret"`
@@ -34,6 +35,7 @@ type Config struct {
 	RefreshExpiry time.Duration `json:"refreshExpiry"`
 }
 
+// UnmarshalJSON custom unmarshals the Config from JSON, parsing duration strings into time.Duration.
 func (c *Config) UnmarshalJSON(data []byte) error {
 	var raw struct {
 		AccessSecret  string `json:"accessSecret"`
@@ -56,6 +58,7 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Init initializes the JWT service by loading the configuration from the provided config provider.
 func Init(ctx context.Context, provider config.ConfigProvider) (*Service, error) {
 	raw, err := provider.Get(ctx, config.JWTConfig)
 	if err != nil {
@@ -70,6 +73,7 @@ func Init(ctx context.Context, provider config.ConfigProvider) (*Service, error)
 	return &Service{Config: cfg}, nil
 }
 
+// Service provides methods for generating and validating JWT tokens.
 type Service struct {
 	Config Config
 }
