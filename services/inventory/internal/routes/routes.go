@@ -40,11 +40,7 @@ func InitRoutes(config Config) error {
 
 		// Authenticated user routes
 		user := v1.Group("", auth)
-		{
-			user.POST("/showtimes/:id/seats/lock", config.Handler.LockSeats)
-			user.POST("/showtimes/:id/seats/release", config.Handler.ReleaseSeats)
-			user.POST("/showtimes/:id/seats/confirm", config.Handler.ConfirmSeats)
-		}
+		user.POST("/showtimes/:id/seats/lock", config.Handler.LockSeats)
 
 		// Merchant-only routes
 		merchant := v1.Group("", auth, merchantOnly)
@@ -53,6 +49,13 @@ func InitRoutes(config Config) error {
 			merchant.POST("/halls/:id/seats", config.Handler.BulkCreateSeats)
 			merchant.POST("/halls/:id/showtimes/publish", config.Handler.PublishShowtimeSeats)
 		}
+	}
+
+	// Internal S2S routes
+	internal := base.Group("/internal")
+	{
+		internal.POST("/showtimes/:id/seats/confirm", config.Handler.ConfirmSeats)
+		internal.POST("/showtimes/:id/seats/release", config.Handler.ReleaseSeats)
 	}
 
 	addr := fmt.Sprintf(":%s", config.Port)

@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/shownest/pkg/cache"
-	pkgconfig "github.com/shownest/pkg/config"
-	"github.com/shownest/pkg/db"
-	"github.com/shownest/pkg/jwt"
 	"github.com/shownest/inventory-service/internal/config"
 	"github.com/shownest/inventory-service/internal/handlers"
 	"github.com/shownest/inventory-service/internal/repository"
 	"github.com/shownest/inventory-service/internal/routes"
 	"github.com/shownest/inventory-service/internal/usecases"
+	"github.com/shownest/pkg/cache"
+	pkgconfig "github.com/shownest/pkg/config"
+	"github.com/shownest/pkg/db"
+	"github.com/shownest/pkg/jwt"
 )
 
 func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error {

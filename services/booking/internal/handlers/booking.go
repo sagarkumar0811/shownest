@@ -33,9 +33,8 @@ func (h *Handler) ConfirmBooking(c *gin.Context) {
 	}
 
 	userID := pkgutils.MustUserID(c)
-	authHeader := c.GetHeader("Authorization")
 
-	info, err := h.usecase.ConfirmBooking(c.Request.Context(), uri.ID, userID, authHeader)
+	info, err := h.usecase.ConfirmBooking(c.Request.Context(), uri.ID, userID)
 	if err != nil {
 		pkgutils.WriteError(c, err)
 		return
@@ -51,9 +50,8 @@ func (h *Handler) CancelBooking(c *gin.Context) {
 	}
 
 	userID := pkgutils.MustUserID(c)
-	authHeader := c.GetHeader("Authorization")
 
-	if err := h.usecase.CancelBooking(c.Request.Context(), uri.ID, userID, authHeader); err != nil {
+	if err := h.usecase.CancelBooking(c.Request.Context(), uri.ID, userID); err != nil {
 		pkgutils.WriteError(c, err)
 		return
 	}

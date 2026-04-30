@@ -51,7 +51,7 @@ func (uc *UseCase) CreateBooking(ctx context.Context, userID string, req request
 
 // ConfirmBooking transitions a pending booking to confirmed. If the inventory
 // call fails, the booking remains pending so the user can retry.
-func (uc *UseCase) ConfirmBooking(ctx context.Context, bookingID, userID, authHeader string) (*response.BookingInfo, error) {
+func (uc *UseCase) ConfirmBooking(ctx context.Context, bookingID, userID string) (*response.BookingInfo, error) {
 	booking, err := uc.repo.GetBookingByID(ctx, bookingID)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (uc *UseCase) ConfirmBooking(ctx context.Context, bookingID, userID, authHe
 	}
 
 	// Call inventory to atomically move seats from locked → booked.
-	if err := uc.inventory.ConfirmSeats(ctx, authHeader, booking.ShowtimeID, seatIDs); err != nil {
+	if err := uc.inventory.ConfirmSeats(ctx, booking.ShowtimeID, seatIDs); err != nil {
 		return nil, err
 	}
 
@@ -97,7 +97,7 @@ func (uc *UseCase) ConfirmBooking(ctx context.Context, bookingID, userID, authHe
 
 // CancelBooking cancels a pending booking and releases seat locks back to available.
 // Confirmed bookings require a refund flow (future phase).
-func (uc *UseCase) CancelBooking(ctx context.Context, bookingID, userID, authHeader string) error {
+func (uc *UseCase) CancelBooking(ctx context.Context, bookingID, userID string) error {
 	booking, err := uc.repo.GetBookingByID(ctx, bookingID)
 	if err != nil {
 		return err
@@ -120,7 +120,7 @@ func (uc *UseCase) CancelBooking(ctx context.Context, bookingID, userID, authHea
 	}
 
 	// Release seat locks in inventory so other users can book them.
-	if err := uc.inventory.ReleaseSeats(ctx, authHeader, booking.ShowtimeID, seatIDs); err != nil {
+	if err := uc.inventory.ReleaseSeats(ctx, booking.ShowtimeID, seatIDs); err != nil {
 		return err
 	}
 

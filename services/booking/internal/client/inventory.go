@@ -11,7 +11,7 @@ import (
 	apperrors "github.com/shownest/pkg/errors"
 )
 
-// InventoryClient forwards the user's JWT so inventory can validate ownership of the seat locks.
+// InventoryClient calls the inventory service on behalf of the booking service.
 type InventoryClient struct {
 	baseURL    string
 	httpClient *http.Client
@@ -30,27 +30,18 @@ type seatIDsPayload struct {
 	SeatIDs []string `json:"seatIds"`
 }
 
-func (c *InventoryClient) ConfirmSeats(ctx context.Context, authHeader, showtimeID string, seatIDs []string) error {
-	return c.postSeatAction(ctx, authHeader, showtimeID, "confirm", seatIDs)
-}
-
-func (c *InventoryClient) ReleaseSeats(ctx context.Context, authHeader, showtimeID string, seatIDs []string) error {
-	return c.postSeatAction(ctx, authHeader, showtimeID, "release", seatIDs)
-}
-
-func (c *InventoryClient) postSeatAction(ctx context.Context, authHeader, showtimeID, action string, seatIDs []string) error {
+func (c *InventoryClient) ConfirmSeats(ctx context.Context, showtimeID string, seatIDs []string) error {
 	body, err := json.Marshal(seatIDsPayload{SeatIDs: seatIDs})
 	if err != nil {
 		return apperrors.Wrap(apperrors.CodeInternal, "marshal inventory request", err)
 	}
 
-	url := fmt.Sprintf("%s/api/inventory/v1/showtimes/%s/seats/%s", c.baseURL, showtimeID, action)
+	url := fmt.Sprintf("%s/api/inventory/internal/showtimes/%s/seats/confirm", c.baseURL, showtimeID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return apperrors.Wrap(apperrors.CodeInternal, "build inventory request", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", authHeader)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -59,7 +50,32 @@ func (c *InventoryClient) postSeatAction(ctx context.Context, authHeader, showti
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return apperrors.New(apperrors.CodeInternal, fmt.Sprintf("inventory service returned %d for action %s", resp.StatusCode, action))
+		return apperrors.New(apperrors.CodeInternal, fmt.Sprintf("inventory service returned %d for confirm", resp.StatusCode))
+	}
+	return nil
+}
+
+func (c *InventoryClient) ReleaseSeats(ctx context.Context, showtimeID string, seatIDs []string) error {
+	body, err := json.Marshal(seatIDsPayload{SeatIDs: seatIDs})
+	if err != nil {
+		return apperrors.Wrap(apperrors.CodeInternal, "marshal inventory request", err)
+	}
+
+	url := fmt.Sprintf("%s/api/inventory/internal/showtimes/%s/seats/release", c.baseURL, showtimeID)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		return apperrors.Wrap(apperrors.CodeInternal, "build inventory request", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return apperrors.Wrap(apperrors.CodeInternal, "call inventory service", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return apperrors.New(apperrors.CodeInternal, fmt.Sprintf("inventory service returned %d for release", resp.StatusCode))
 	}
 	return nil
 }
