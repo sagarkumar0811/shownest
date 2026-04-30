@@ -175,6 +175,18 @@ func (uc *UseCase) GetShowtime(ctx context.Context, showtimeID string) (*respons
 	return &info, nil
 }
 
+func (uc *UseCase) GetShowtimeBasePrice(ctx context.Context, showtimeID string) (float64, error) {
+	s, err := uc.repo.GetShowtimeByID(ctx, showtimeID)
+	if err != nil {
+		return 0, err
+	}
+	price, err := s.BasePrice.Float64Value()
+	if err != nil || !price.Valid {
+		return 0, apperrors.New(apperrors.CodeInternal, "invalid base price on showtime")
+	}
+	return price.Float64, nil
+}
+
 func (uc *UseCase) ListShowtimes(ctx context.Context, eventID string) ([]response.ShowtimeInfo, error) {
 	cacheKey := utils.ShowtimeListCacheKey(eventID)
 

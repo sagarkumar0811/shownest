@@ -224,3 +224,19 @@ func (uc *UseCase) ConfirmSeats(ctx context.Context, showtimeID, userID string, 
 	uc.cache.Del(ctx, utils.SeatAvailCacheKey(showtimeID))
 	return nil
 }
+
+func (uc *UseCase) GetSeatPrices(ctx context.Context, showtimeID string, req request.GetSeatPricesRequest) ([]response.SeatPriceInfo, error) {
+	rows, err := uc.repo.GetSeatPrices(ctx, showtimeID, req.SeatIDs)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]response.SeatPriceInfo, len(rows))
+	for i, r := range rows {
+		result[i] = response.SeatPriceInfo{
+			SeatID:          r.SeatID,
+			CategoryID:      r.CategoryID,
+			PriceMultiplier: r.PriceMultiplier,
+		}
+	}
+	return result, nil
+}

@@ -46,6 +46,20 @@ func (h *Handler) GetShowtime(c *gin.Context) {
 	c.JSON(http.StatusOK, info)
 }
 
+func (h *Handler) GetShowtimeBasePrice(c *gin.Context) {
+	var uri request.ShowtimeIDRequest
+	if err := c.ShouldBindUri(&uri); err != nil {
+		utils.WriteError(c, apperrors.New(apperrors.CodeInvalidArgument, err.Error()))
+		return
+	}
+	price, err := h.usecase.GetShowtimeBasePrice(c.Request.Context(), uri.ShowtimeID)
+	if err != nil {
+		utils.WriteError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"basePrice": price})
+}
+
 func (h *Handler) ListShowtimes(c *gin.Context) {
 	var uri request.EventIDRequest
 	if err := c.ShouldBindUri(&uri); err != nil {

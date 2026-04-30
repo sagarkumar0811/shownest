@@ -10,6 +10,7 @@ import (
 
 type ExternalService struct {
 	Inventory string `json:"inventory"`
+	Catalog   string `json:"catalog"`
 }
 
 type Config struct {

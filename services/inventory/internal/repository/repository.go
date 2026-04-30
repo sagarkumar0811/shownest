@@ -311,6 +311,31 @@ func (r *Repository) BookShowtimeSeats(ctx context.Context, showtimeID, userID s
 	return nil
 }
 
+func (r *Repository) GetSeatPrices(ctx context.Context, showtimeID string, seatIDs []string) ([]models.SeatPrice, error) {
+	ifaces := make([]interface{}, len(seatIDs))
+	for i, id := range seatIDs {
+		ifaces[i] = id
+	}
+
+	sql, args, err := psql.
+		Select("ss.seat_id", "s.category_id", "sc.price_multiplier").
+		From("showtime_seats ss").
+		Join("seats s ON s.id = ss.seat_id").
+		Join("seat_categories sc ON sc.id = s.category_id").
+		Where(sq.Eq{"ss.showtime_id": showtimeID}).
+		Where(sq.Eq{"ss.seat_id": ifaces}).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeInternal, "build query", err)
+	}
+
+	var rows []models.SeatPrice
+	if err := pgxscan.Select(ctx, r.db, &rows, sql, args...); err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "get seat prices", err)
+	}
+	return rows, nil
+}
+
 func (r *Repository) BeginTx(ctx context.Context) (pgx.Tx, error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {

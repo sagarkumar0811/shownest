@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/shownest/booking-service/internal/client"
@@ -17,13 +18,40 @@ import (
 type UseCase struct {
 	repo      *repository.Repository
 	inventory *client.InventoryClient
+	catalog   *client.CatalogClient
 }
 
-func New(repo *repository.Repository, inventory *client.InventoryClient) *UseCase {
-	return &UseCase{repo: repo, inventory: inventory}
+func New(repo *repository.Repository, inventory *client.InventoryClient, catalog *client.CatalogClient) *UseCase {
+	return &UseCase{repo: repo, inventory: inventory, catalog: catalog}
 }
 
 func (uc *UseCase) CreateBooking(ctx context.Context, userID string, req request.CreateBookingRequest) (*response.BookingInfo, error) {
+	// Fetch showtime base price from catalog service.
+	basePrice, err := uc.catalog.GetShowtimeBasePrice(ctx, req.ShowtimeID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Collect seat IDs to look up multipliers.
+	seatIDs := make([]string, len(req.Seats))
+	for i, s := range req.Seats {
+		seatIDs[i] = s.SeatID
+	}
+
+	// Fetch price multipliers from inventory service.
+	seatPrices, err := uc.inventory.GetSeatPrices(ctx, req.ShowtimeID, seatIDs)
+	if err != nil {
+		return nil, err
+	}
+	multiplierBySeat := make(map[string]float64, len(seatPrices))
+	for _, sp := range seatPrices {
+		m, err := strconv.ParseFloat(sp.PriceMultiplier, 64)
+		if err != nil {
+			return nil, apperrors.Wrap(apperrors.CodeInternal, "parse price multiplier", err)
+		}
+		multiplierBySeat[sp.SeatID] = m
+	}
+
 	var totalAmount float64
 	items := make([]struct {
 		SeatID, CategoryID string
@@ -31,11 +59,16 @@ func (uc *UseCase) CreateBooking(ctx context.Context, userID string, req request
 	}, len(req.Seats))
 
 	for i, s := range req.Seats {
+		multiplier, ok := multiplierBySeat[s.SeatID]
+		if !ok {
+			return nil, apperrors.New(apperrors.CodeInvalidArgument, "seat not found in showtime: "+s.SeatID)
+		}
+		price := basePrice * multiplier
 		items[i] = struct {
 			SeatID, CategoryID string
 			Price              float64
-		}{s.SeatID, s.CategoryID, s.Price}
-		totalAmount += s.Price
+		}{s.SeatID, s.CategoryID, price}
+		totalAmount += price
 	}
 
 	expiresAt := time.Now().Add(time.Duration(utils.BookingExpirySeconds) * time.Second)

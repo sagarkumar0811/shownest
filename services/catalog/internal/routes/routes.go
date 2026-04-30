@@ -52,6 +52,12 @@ func InitRoutes(config Config) error {
 		}
 	}
 
+	// Internal S2S routes
+	internal := base.Group("/internal")
+	{
+		internal.GET("/showtimes/:id/base-price", config.Handler.GetShowtimeBasePrice)
+	}
+
 	addr := fmt.Sprintf(":%s", config.Port)
 	return r.Run(addr)
 }

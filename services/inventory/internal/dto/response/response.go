@@ -39,3 +39,9 @@ type LockSeatsResponse struct {
 	Locked []string `json:"locked"`
 	Failed []string `json:"failed,omitempty"`
 }
+
+type SeatPriceInfo struct {
+	SeatID          string `json:"seatId"`
+	CategoryID      string `json:"categoryId"`
+	PriceMultiplier string `json:"priceMultiplier"`
+}

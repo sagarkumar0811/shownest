@@ -35,3 +35,9 @@ type ShowtimeSeat struct {
 	CreatedAt  time.Time  `db:"created_at"`
 	UpdatedAt  time.Time  `db:"updated_at"`
 }
+
+type SeatPrice struct {
+	SeatID          string `db:"seat_id"`
+	CategoryID      string `db:"category_id"`
+	PriceMultiplier string `db:"price_multiplier"`
+}

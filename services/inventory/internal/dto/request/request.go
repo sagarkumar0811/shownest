@@ -63,3 +63,7 @@ func (r *ReleaseSeatsRequest) Validate() error {
 type ConfirmSeatsRequest struct {
 	SeatIDs []string `json:"seatIds" binding:"required,min=1"`
 }
+
+type GetSeatPricesRequest struct {
+	SeatIDs []string `json:"seatIds" binding:"required,min=1"`
+}

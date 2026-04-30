@@ -174,3 +174,22 @@ func (h *Handler) ConfirmSeats(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"confirmed": true})
 }
+
+func (h *Handler) GetSeatPrices(c *gin.Context) {
+	var uri request.ShowtimeIDRequest
+	if err := c.ShouldBindUri(&uri); err != nil {
+		utils.WriteError(c, apperrors.New(apperrors.CodeInvalidArgument, err.Error()))
+		return
+	}
+	var req request.GetSeatPricesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteError(c, apperrors.New(apperrors.CodeInvalidArgument, err.Error()))
+		return
+	}
+	prices, err := h.usecase.GetSeatPrices(c.Request.Context(), uri.ShowtimeID, req)
+	if err != nil {
+		utils.WriteError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, prices)
+}

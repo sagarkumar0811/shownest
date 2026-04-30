@@ -39,9 +39,12 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 	// Initialize inventory client
 	inventoryClient := client.NewInventoryClient(serviceConfig.ExternalService.Inventory)
 
+	// Initialize catalog client
+	catalogClient := client.NewCatalogClient(serviceConfig.ExternalService.Catalog)
+
 	// Initialize repository, use cases, and handlers
 	repo := repository.New(pool)
-	usecase := usecases.New(repo, inventoryClient)
+	usecase := usecases.New(repo, inventoryClient, catalogClient)
 	handler := handlers.New(usecase)
 
 	return routes.InitRoutes(routes.Config{
