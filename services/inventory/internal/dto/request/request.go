@@ -59,3 +59,7 @@ func (r *ReleaseSeatsRequest) Validate() error {
 	}
 	return nil
 }
+
+type ConfirmSeatsRequest struct {
+	SeatIDs []string `json:"seatIds" binding:"required,min=1"`
+}

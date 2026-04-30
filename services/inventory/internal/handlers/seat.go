@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	apperrors "github.com/shownest/pkg/errors"
 	"github.com/shownest/inventory-service/internal/dto/request"
 	"github.com/shownest/inventory-service/internal/utils"
+	apperrors "github.com/shownest/pkg/errors"
 )
 
 func (h *Handler) CreateSeatCategory(c *gin.Context) {
@@ -155,4 +155,22 @@ func (h *Handler) ReleaseSeats(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"released": true})
+}
+
+func (h *Handler) ConfirmSeats(c *gin.Context) {
+	var uri request.ShowtimeIDRequest
+	if err := c.ShouldBindUri(&uri); err != nil {
+		utils.WriteError(c, apperrors.New(apperrors.CodeInvalidArgument, err.Error()))
+		return
+	}
+	var req request.ConfirmSeatsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteError(c, apperrors.New(apperrors.CodeInvalidArgument, err.Error()))
+		return
+	}
+	if err := h.usecase.ConfirmSeats(c.Request.Context(), uri.ShowtimeID, utils.MustUserID(c), req); err != nil {
+		utils.WriteError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"confirmed": true})
 }

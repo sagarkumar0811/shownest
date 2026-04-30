@@ -295,6 +295,22 @@ func (r *Repository) ExpireLockedSeats(ctx context.Context, ttlSeconds int) (int
 	return tag.RowsAffected(), nil
 }
 
+func (r *Repository) BookShowtimeSeats(ctx context.Context, showtimeID, userID string, seatIDs []string) error {
+	sql, args, err := psql.Update("showtime_seats").
+		Set("status", utils.SeatStatusBooked).
+		Set("locked_by", nil).
+		Set("locked_at", nil).
+		Where(sq.Eq{"showtime_id": showtimeID, "seat_id": seatIDs, "status": utils.SeatStatusLocked, "locked_by": userID}).
+		ToSql()
+	if err != nil {
+		return apperrors.Wrap(apperrors.CodeInternal, "build query", err)
+	}
+	if _, err := r.db.Exec(ctx, sql, args...); err != nil {
+		return apperrors.Wrap(apperrors.CodeDBError, "book showtime seats", err)
+	}
+	return nil
+}
+
 func (r *Repository) BeginTx(ctx context.Context) (pgx.Tx, error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {

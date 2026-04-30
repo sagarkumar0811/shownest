@@ -43,6 +43,7 @@ func InitRoutes(config Config) error {
 		{
 			user.POST("/showtimes/:id/seats/lock", config.Handler.LockSeats)
 			user.POST("/showtimes/:id/seats/release", config.Handler.ReleaseSeats)
+			user.POST("/showtimes/:id/seats/confirm", config.Handler.ConfirmSeats)
 		}
 
 		// Merchant-only routes
