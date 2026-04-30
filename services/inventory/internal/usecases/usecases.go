@@ -159,8 +159,9 @@ func (uc *UseCase) LockSeats(ctx context.Context, showtimeID, userID string, req
 			continue
 		}
 
-		// Redis lock acquired. Now persist the lock in the DB using SELECT FOR UPDATE
-		// to guard against any edge case where Redis and DB get out of sync.
+		// Redis lock acquired. Now persist the lock in the DB via a conditional UPDATE
+		// (WHERE status = 'available') to guard against any edge case where Redis
+		// and DB get out of sync.
 		tx, err := uc.repo.BeginTx(ctx)
 		if err != nil {
 			// Roll back the Redis key so the seat doesn't stay locked indefinitely.

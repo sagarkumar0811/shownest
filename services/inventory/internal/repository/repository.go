@@ -236,10 +236,10 @@ func (r *Repository) ListShowtimeSeats(ctx context.Context, showtimeID string) (
 
 func (r *Repository) LockShowtimeSeat(ctx context.Context, tx pgx.Tx, showtimeID, seatID, userID string) error {
 	sql, args, err := psql.Update("showtime_seats").
-		Set("status", "locked").
+		Set("status", utils.SeatStatusLocked).
 		Set("locked_by", userID).
 		Set("locked_at", sq.Expr("NOW()")).
-		Where(sq.Eq{"showtime_id": showtimeID, "seat_id": seatID, "status": "available"}).
+		Where(sq.Eq{"showtime_id": showtimeID, "seat_id": seatID, "status": utils.SeatStatusAvailable}).
 		Suffix("RETURNING id").
 		ToSql()
 	if err != nil {
@@ -262,10 +262,10 @@ func (r *Repository) LockShowtimeSeat(ctx context.Context, tx pgx.Tx, showtimeID
 
 func (r *Repository) ReleaseShowtimeSeat(ctx context.Context, showtimeID, seatID, userID string) error {
 	sql, args, err := psql.Update("showtime_seats").
-		Set("status", "available").
+		Set("status", utils.SeatStatusAvailable).
 		Set("locked_by", nil).
 		Set("locked_at", nil).
-		Where(sq.Eq{"showtime_id": showtimeID, "seat_id": seatID, "status": "locked", "locked_by": userID}).
+		Where(sq.Eq{"showtime_id": showtimeID, "seat_id": seatID, "status": utils.SeatStatusLocked, "locked_by": userID}).
 		ToSql()
 	if err != nil {
 		return apperrors.Wrap(apperrors.CodeInternal, "build query", err)
@@ -278,10 +278,10 @@ func (r *Repository) ReleaseShowtimeSeat(ctx context.Context, showtimeID, seatID
 
 func (r *Repository) ExpireLockedSeats(ctx context.Context, ttlSeconds int) (int64, error) {
 	sql, args, err := psql.Update("showtime_seats").
-		Set("status", "available").
+		Set("status", utils.SeatStatusAvailable).
 		Set("locked_by", nil).
 		Set("locked_at", nil).
-		Where(sq.Eq{"status": "locked"}).
+		Where(sq.Eq{"status": utils.SeatStatusLocked}).
 		Where(sq.Expr("locked_at < NOW() - INTERVAL '1 second' * ?", ttlSeconds)).
 		ToSql()
 	if err != nil {

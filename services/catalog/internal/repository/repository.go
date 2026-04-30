@@ -130,7 +130,7 @@ func (r *Repository) CheckHallConflict(ctx context.Context, tx pgx.Tx, hallID st
 	sql, args, err := psql.Select("id").From("showtimes").
 		Where(sq.Eq{"hall_id": hallID}).
 		Where("deleted_at IS NULL").
-		Where(sq.NotEq{"status": "cancelled"}).
+		Where(sq.NotEq{"status": utils.ShowtimeStatusCancelled}).
 		Where("start_time < ?", endTime).
 		Where("end_time > ?", startTime).
 		Suffix("FOR UPDATE").
