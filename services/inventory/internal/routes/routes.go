@@ -22,7 +22,7 @@ func InitRoutes(config Config) error {
 	r := gin.New()
 	r.Use(gin.Recovery())
 
-	base := r.Group("/api/seat")
+	base := r.Group("/api/inventory")
 
 	base.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": true})
