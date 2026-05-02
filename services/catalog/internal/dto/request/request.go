@@ -44,7 +44,7 @@ func (r *UpdateEventRequest) Validate() error {
 }
 
 type EventIDRequest struct {
-	EventID string `uri:"id" binding:"required"`
+	EventID string `uri:"eventId" binding:"required"`
 }
 
 type ListEventsRequest struct {
@@ -71,7 +71,7 @@ func (r *CreateShowtimeRequest) Validate() error {
 }
 
 type ShowtimeIDRequest struct {
-	ShowtimeID string `uri:"id" binding:"required"`
+	ShowtimeID string `uri:"showtimeId" binding:"required"`
 }
 
 type UpdateShowtimeRequest struct {

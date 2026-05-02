@@ -36,7 +36,7 @@ type RefreshTokenRequest struct {
 }
 
 type RevokeSessionRequest struct {
-	SessionID string `uri:"id" binding:"required"`
+	SessionID string `uri:"sessionId" binding:"required"`
 }
 
 type UpdateProfileRequest struct {

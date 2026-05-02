@@ -3,7 +3,7 @@ package request
 import "errors"
 
 type HallIDRequest struct {
-	HallID string `uri:"id" binding:"required"`
+	HallID string `uri:"hallId" binding:"required"`
 }
 
 type CreateSeatCategoryRequest struct {
@@ -31,7 +31,7 @@ func (r *BulkCreateSeatsRequest) Validate() error {
 }
 
 type ShowtimeIDRequest struct {
-	ShowtimeID string `uri:"id" binding:"required"`
+	ShowtimeID string `uri:"showtimeId" binding:"required"`
 }
 
 type PublishShowtimeSeatsRequest struct {

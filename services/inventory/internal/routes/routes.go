@@ -32,29 +32,29 @@ func InitRoutes(config Config) error {
 		merchantOnly := middleware.RequireMerchant()
 
 		// Public routes
-		v1.GET("/showtimes/:id/seats", config.Handler.ListShowtimeSeats)
-		v1.GET("/halls/:id/seats", config.Handler.ListSeats)
-		v1.GET("/halls/:id/seat-categories", config.Handler.ListSeatCategories)
+		v1.GET("/showtimes/:showtimeId/seats", config.Handler.ListShowtimeSeats)
+		v1.GET("/halls/:hallId/seats", config.Handler.ListSeats)
+		v1.GET("/halls/:hallId/seat-categories", config.Handler.ListSeatCategories)
 
 		// Authenticated user routes
 		user := v1.Group("", auth)
-		user.POST("/showtimes/:id/seats/lock", config.Handler.LockSeats)
+		user.POST("/showtimes/:showtimeId/seats/lock", config.Handler.LockSeats)
 
 		// Merchant-only routes
 		merchant := v1.Group("", auth, merchantOnly)
 		{
-			merchant.POST("/halls/:id/seat-categories", config.Handler.CreateSeatCategory)
-			merchant.POST("/halls/:id/seats", config.Handler.BulkCreateSeats)
-			merchant.POST("/halls/:id/showtimes/publish", config.Handler.PublishShowtimeSeats)
+			merchant.POST("/halls/:hallId/seat-categories", config.Handler.CreateSeatCategory)
+			merchant.POST("/halls/:hallId/seats", config.Handler.BulkCreateSeats)
+			merchant.POST("/halls/:hallId/showtimes/publish", config.Handler.PublishShowtimeSeats)
 		}
 	}
 
 	// Internal S2S routes
 	internal := base.Group("/internal")
 	{
-		internal.POST("/showtimes/:id/seats/confirm", config.Handler.ConfirmSeats)
-		internal.POST("/showtimes/:id/seats/release", config.Handler.ReleaseSeats)
-		internal.POST("/showtimes/:id/seats/prices", config.Handler.GetSeatPrices)
+		internal.POST("/showtimes/:showtimeId/seats/confirm", config.Handler.ConfirmSeats)
+		internal.POST("/showtimes/:showtimeId/seats/release", config.Handler.ReleaseSeats)
+		internal.POST("/showtimes/:showtimeId/seats/prices", config.Handler.GetSeatPrices)
 	}
 
 	addr := fmt.Sprintf(":%s", config.Port)

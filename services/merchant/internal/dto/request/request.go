@@ -73,7 +73,7 @@ type NearbyVenuesRequest struct {
 }
 
 type VenueIDRequest struct {
-	VenueID string `uri:"id" binding:"required"`
+	VenueID string `uri:"venueId" binding:"required"`
 }
 
 type CityRequest struct {

@@ -41,7 +41,7 @@ func InitRoutes(config Config) error {
 			protected := auth.Group("", middleware.JWTAuth(config.JWTService))
 			{
 				protected.GET("/sessions", config.Handler.ListSessions)
-				protected.DELETE("/sessions/:id", config.Handler.RevokeSession)
+				protected.DELETE("/sessions/:sessionId", config.Handler.RevokeSession)
 				protected.DELETE("/sessions", config.Handler.RevokeAllSessions)
 			}
 		}

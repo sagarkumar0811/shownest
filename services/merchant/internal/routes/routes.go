@@ -50,9 +50,9 @@ func InitRoutes(config Config) error {
 		{
 			merchant.POST("/venues", config.Handler.CreateVenue)
 			merchant.GET("/venues", config.Handler.ListMyVenues)
-			merchant.GET("/venues/:id", config.Handler.GetVenue)
-			merchant.POST("/venues/:id/halls", config.Handler.CreateHall)
-			merchant.GET("/venues/:id/halls", config.Handler.ListHalls)
+			merchant.GET("/venues/:venueId", config.Handler.GetVenue)
+			merchant.POST("/venues/:venueId/halls", config.Handler.CreateHall)
+			merchant.GET("/venues/:venueId/halls", config.Handler.ListHalls)
 
 			merchant.POST("/merchants/me/documents/upload-url", config.Handler.RequestDocumentUploadURL)
 			merchant.POST("/merchants/me/documents/confirm", config.Handler.ConfirmDocument)

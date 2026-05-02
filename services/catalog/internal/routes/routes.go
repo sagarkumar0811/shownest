@@ -35,27 +35,27 @@ func InitRoutes(config Config) error {
 
 		// Public routes
 		v1.GET("/events", config.Handler.ListEvents)
-		v1.GET("/events/:id", config.Handler.GetEvent)
-		v1.GET("/events/:id/showtimes", config.Handler.ListShowtimes)
-		v1.GET("/events/:id/media", config.Handler.ListMedia)
-		v1.GET("/showtimes/:id", config.Handler.GetShowtime)
+		v1.GET("/events/:eventId", config.Handler.GetEvent)
+		v1.GET("/events/:eventId/showtimes", config.Handler.ListShowtimes)
+		v1.GET("/events/:eventId/media", config.Handler.ListMedia)
+		v1.GET("/showtimes/:showtimeId", config.Handler.GetShowtime)
 
 		// Merchant-only routes
 		merchant := v1.Group("", auth, merchantOnly)
 		{
 			merchant.POST("/events", config.Handler.CreateEvent)
-			merchant.PATCH("/events/:id", config.Handler.UpdateEvent)
-			merchant.POST("/events/:id/showtimes", config.Handler.CreateShowtime)
-			merchant.PATCH("/showtimes/:id", config.Handler.UpdateShowtime)
-			merchant.POST("/events/:id/media/upload-url", config.Handler.RequestMediaUploadURL)
-			merchant.POST("/events/:id/media/confirm", config.Handler.ConfirmMedia)
+			merchant.PATCH("/events/:eventId", config.Handler.UpdateEvent)
+			merchant.POST("/events/:eventId/showtimes", config.Handler.CreateShowtime)
+			merchant.PATCH("/showtimes/:showtimeId", config.Handler.UpdateShowtime)
+			merchant.POST("/events/:eventId/media/upload-url", config.Handler.RequestMediaUploadURL)
+			merchant.POST("/events/:eventId/media/confirm", config.Handler.ConfirmMedia)
 		}
 	}
 
 	// Internal S2S routes
 	internal := base.Group("/internal")
 	{
-		internal.GET("/showtimes/:id/base-price", config.Handler.GetShowtimeBasePrice)
+		internal.GET("/showtimes/:showtimeId/base-price", config.Handler.GetShowtimeBasePrice)
 	}
 
 	addr := fmt.Sprintf(":%s", config.Port)

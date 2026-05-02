@@ -33,9 +33,9 @@ func InitRoutes(config Config) error {
 	{
 		v1.POST("/create", config.Handler.CreateBooking)
 		v1.GET("/list", config.Handler.ListUserBookings)
-		v1.GET("/:id/fetch", config.Handler.GetBooking)
-		v1.POST("/:id/confirm", config.Handler.ConfirmBooking)
-		v1.POST("/:id/cancel", config.Handler.CancelBooking)
+		v1.GET("/:bookingId/fetch", config.Handler.GetBooking)
+		v1.POST("/:bookingId/confirm", config.Handler.ConfirmBooking)
+		v1.POST("/:bookingId/cancel", config.Handler.CancelBooking)
 	}
 
 	addr := fmt.Sprintf(":%s", config.Port)

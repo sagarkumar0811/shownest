@@ -1,7 +1,7 @@
 package request
 
 type BookingIDRequest struct {
-	ID string `uri:"id" binding:"required"`
+	ID string `uri:"bookingId" binding:"required"`
 }
 
 type SeatBookingItem struct {
