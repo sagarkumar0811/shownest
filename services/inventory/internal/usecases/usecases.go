@@ -212,11 +212,17 @@ func (uc *UseCase) ReleaseSeats(ctx context.Context, showtimeID, userID string, 
 }
 
 func (uc *UseCase) ConfirmSeats(ctx context.Context, showtimeID, userID string, req request.ConfirmSeatsRequest) error {
+	for _, seatID := range req.SeatIDs {
+		val, err := uc.cache.Get(ctx, utils.SeatLockKey(showtimeID, seatID)).Result()
+		if err != nil || val != userID {
+			return apperrors.New(apperrors.CodeFailedPrecondition, "seat lock expired or not held: "+seatID)
+		}
+	}
+
 	if err := uc.repo.BookShowtimeSeats(ctx, showtimeID, userID, req.SeatIDs); err != nil {
 		return err
 	}
 
-	// Remove the Redis lock keys — seats are now permanently booked, not just locked.
 	for _, seatID := range req.SeatIDs {
 		uc.cache.Del(ctx, utils.SeatLockKey(showtimeID, seatID))
 	}

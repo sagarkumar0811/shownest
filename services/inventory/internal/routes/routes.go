@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 	"github.com/shownest/inventory-service/internal/handlers"
 	"github.com/shownest/pkg/jwt"
 	"github.com/shownest/pkg/middleware"
@@ -14,7 +13,6 @@ import (
 type Config struct {
 	Handler    *handlers.Handler
 	JWTService *jwt.Service
-	Cache      *redis.Client
 	Port       string
 }
 
