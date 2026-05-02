@@ -6,6 +6,7 @@ import (
 
 	"github.com/shownest/inventory-service/internal/config"
 	"github.com/shownest/inventory-service/internal/handlers"
+	"github.com/shownest/inventory-service/internal/jobs"
 	"github.com/shownest/inventory-service/internal/repository"
 	"github.com/shownest/inventory-service/internal/routes"
 	"github.com/shownest/inventory-service/internal/usecases"
@@ -47,6 +48,9 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 	repo := repository.New(pool)
 	usecase := usecases.New(repo, cacheClient)
 	handler := handlers.New(usecase)
+
+	// Start all background jobs
+	jobs.StartJobs(ctx, repo)
 
 	return routes.InitRoutes(routes.Config{
 		Handler:    handler,
