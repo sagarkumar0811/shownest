@@ -31,11 +31,11 @@ func InitRoutes(config Config) error {
 	// Authenticated user routes
 	v1 := base.Group("/v1", auth)
 	{
-		v1.POST("/reservations", config.Handler.CreateBooking)
-		v1.GET("/reservations", config.Handler.ListUserBookings)
-		v1.GET("/reservations/:id", config.Handler.GetBooking)
-		v1.POST("/reservations/:id/confirm", config.Handler.ConfirmBooking)
-		v1.POST("/reservations/:id/cancel", config.Handler.CancelBooking)
+		v1.POST("/orders/checkout", config.Handler.CreateBooking)
+		v1.GET("/orders", config.Handler.ListUserBookings)
+		v1.GET("/orders/:id", config.Handler.GetBooking)
+		v1.POST("/orders/:id/confirm", config.Handler.ConfirmBooking)
+		v1.POST("/orders/:id/cancel", config.Handler.CancelBooking)
 	}
 
 	addr := fmt.Sprintf(":%s", config.Port)
