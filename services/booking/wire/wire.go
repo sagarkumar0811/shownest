@@ -7,6 +7,7 @@ import (
 	"github.com/shownest/booking-service/internal/client"
 	"github.com/shownest/booking-service/internal/config"
 	"github.com/shownest/booking-service/internal/handlers"
+	"github.com/shownest/booking-service/internal/jobs"
 	"github.com/shownest/booking-service/internal/repository"
 	"github.com/shownest/booking-service/internal/routes"
 	"github.com/shownest/booking-service/internal/usecases"
@@ -46,6 +47,9 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 	repo := repository.New(pool)
 	usecase := usecases.New(repo, inventoryClient, catalogClient)
 	handler := handlers.New(usecase)
+
+	// Start all background jobs
+	jobs.StartJobs(ctx, repo, inventoryClient)
 
 	return routes.InitRoutes(routes.Config{
 		Handler:    handler,

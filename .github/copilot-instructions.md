@@ -97,6 +97,7 @@ Run `gofmt` and verify the build compiles cleanly:
 ```sh
 gofmt -w <changed_file.go>
 go build ./...   # from inside the affected service directory
+go mod tidy      # if you added/removed imports
 ```
 
 Fix any compilation errors before moving on.

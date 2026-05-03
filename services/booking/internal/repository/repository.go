@@ -182,6 +182,54 @@ func (r *Repository) UpdateBookingStatus(ctx context.Context, id, status string,
 	return &b, nil
 }
 
+func (r *Repository) FetchAndCancelExpiredBookings(ctx context.Context) ([]models.Booking, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "begin transaction", err)
+	}
+	defer tx.Rollback(ctx)
+
+	updateSql, updateArgs, err := psql.Update("bookings").
+		Set("status", utils.BookingStatusCancelled).
+		Where(sq.And{
+			sq.Eq{"status": utils.BookingStatusPending},
+			sq.Expr("expires_at < NOW()"),
+		}).
+		Suffix("RETURNING " + pkgutils.JoinColumns(bookingColumns)).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeInternal, "build expire bookings query", err)
+	}
+
+	rows, _ := tx.Query(ctx, updateSql, updateArgs...)
+	bookings, err := pgx.CollectRows(rows, pgx.RowToStructByName[models.Booking])
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "cancel expired bookings", err)
+	}
+
+	if len(bookings) == 0 {
+		return nil, nil
+	}
+
+	q := psql.Insert("bookings_state_log").Columns("booking_id", "from_status", "to_status")
+	for _, b := range bookings {
+		q = q.Values(b.ID, utils.BookingStatusPending, utils.BookingStatusCancelled)
+	}
+	logSql, logArgs, err := q.ToSql()
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeInternal, "build state log query", err)
+	}
+	if _, err := tx.Exec(ctx, logSql, logArgs...); err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "insert state log entries", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "commit expire bookings", err)
+	}
+
+	return bookings, nil
+}
+
 func (r *Repository) ListBookingsByUserID(ctx context.Context, userID string) ([]models.Booking, error) {
 	sql, args, err := psql.Select(bookingColumns...).From("bookings").
 		Where(sq.Eq{"user_id": userID}).
