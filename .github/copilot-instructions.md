@@ -76,6 +76,7 @@ HTTP error responses are written via `pkg/utils.WriteError(c, err)`.
 - **DB columns**: `snake_case`
 - **Constants**: `PascalCase` in `utils/constants.go`
 - **Go identifiers**: follow standard Go conventions (`MustUserID`, `WriteError`, etc.)
+- **Proper Spacing between sections**: Use a single blank line between logical sections of code (e.g. variable declarations, error handling, return statement).
 
 ## Code Style
 
@@ -118,3 +119,10 @@ Never duplicate anything that already exists in `pkg/`. Key exports:
 - `pkg/db` — pgxpool init
 - `pkg/cache` — Redis client init
 - `pkg/logger` — Zap logger
+
+## Response From Copilot
+- Keep the response strictly to the point — only code that directly addresses the task
+- Do not include any explanations, comments, or docstrings that were not already present in the codebase
+- Do not suggest any code that has been deleted in recent edits
+- Do not suggest any code that is outside the scope of the task, even if it seems related
+- Keep the response as brief and concise as possible while still being correct and complete
