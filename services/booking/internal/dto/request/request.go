@@ -4,6 +4,10 @@ type BookingIDRequest struct {
 	ID string `uri:"bookingId" binding:"required"`
 }
 
+type VerifyTicketRequest struct {
+	Token string `json:"token" binding:"required"`
+}
+
 type SeatBookingItem struct {
 	SeatID     string `json:"seatId"     binding:"required"`
 	CategoryID string `json:"categoryId" binding:"required"`

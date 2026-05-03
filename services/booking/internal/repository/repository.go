@@ -25,7 +25,7 @@ func New(db *pgxpool.Pool) *Repository {
 }
 
 var bookingColumns = []string{
-	"id", "user_id", "showtime_id", "status", "total_amount", "qr_token", "expires_at", "created_at", "updated_at",
+	"id", "user_id", "showtime_id", "status", "total_amount", "qr_token", "used_at", "expires_at", "created_at", "updated_at",
 }
 
 var bookingItemColumns = []string{
@@ -180,6 +180,48 @@ func (r *Repository) UpdateBookingStatus(ctx context.Context, id, status string,
 	}
 
 	return &b, nil
+}
+
+func (r *Repository) GetBookingByQRToken(ctx context.Context, qrToken string) (*models.Booking, error) {
+	sql, args, err := psql.Select(bookingColumns...).From("bookings").
+		Where(sq.Eq{"qr_token": qrToken}).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeInternal, "build query", err)
+	}
+
+	var b models.Booking
+	if err := pgxscan.Get(ctx, r.db, &b, sql, args...); err != nil {
+		if pgxscan.NotFound(err) {
+			return nil, apperrors.New(apperrors.CodeDBNotFound, "ticket not found")
+		}
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "get booking by qr token", err)
+	}
+	return &b, nil
+}
+
+func (r *Repository) MarkTicketUsed(ctx context.Context, bookingID string) error {
+	sql, args, err := psql.Update("bookings").
+		Set("used_at", sq.Expr("NOW()")).
+		Where(sq.Eq{"id": bookingID, "used_at": nil}).
+		Suffix("RETURNING id").
+		ToSql()
+	if err != nil {
+		return apperrors.Wrap(apperrors.CodeInternal, "build query", err)
+	}
+
+	rows, _ := r.db.Query(ctx, sql, args...)
+	_, err = pgx.CollectOneRow(rows, func(row pgx.CollectableRow) (string, error) {
+		var id string
+		return id, row.Scan(&id)
+	})
+	if err != nil {
+		if pgxscan.NotFound(err) {
+			return apperrors.New(apperrors.CodeAlreadyExists, "ticket already used")
+		}
+		return apperrors.Wrap(apperrors.CodeDBError, "mark ticket used", err)
+	}
+	return nil
 }
 
 func (r *Repository) FetchAndCancelExpiredBookings(ctx context.Context) ([]models.Booking, error) {

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS bookings (
                  CHECK (status IN ('pending', 'confirmed', 'cancelled')),
     total_amount NUMERIC(10, 2) NOT NULL CHECK (total_amount >= 0),
     qr_token     TEXT,
+    used_at      TIMESTAMPTZ,
     expires_at   TIMESTAMPTZ    NOT NULL,
     created_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
     updated_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW()

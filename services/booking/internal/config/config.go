@@ -16,6 +16,7 @@ type ExternalService struct {
 type Config struct {
 	App             string          `json:"app"`
 	Port            string          `json:"port"`
+	TicketSecret    string          `json:"ticketSecret"`
 	ExternalService ExternalService `json:"externalService"`
 }
 

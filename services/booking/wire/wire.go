@@ -45,7 +45,7 @@ func InitializeApp(ctx context.Context, provider pkgconfig.ConfigProvider) error
 
 	// Initialize repository, use cases, and handlers
 	repo := repository.New(pool)
-	usecase := usecases.New(repo, inventoryClient, catalogClient)
+	usecase := usecases.New(repo, inventoryClient, catalogClient, serviceConfig.TicketSecret)
 	handler := handlers.New(usecase)
 
 	// Start all background jobs

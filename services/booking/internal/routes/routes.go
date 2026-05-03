@@ -38,6 +38,11 @@ func InitRoutes(config Config) error {
 		v1.POST("/:bookingId/cancel", config.Handler.CancelBooking)
 	}
 
+	internal := base.Group("/internal")
+	{
+		internal.POST("/tickets/verify", config.Handler.VerifyTicket)
+	}
+
 	addr := fmt.Sprintf(":%s", config.Port)
 	return r.Run(addr)
 }
