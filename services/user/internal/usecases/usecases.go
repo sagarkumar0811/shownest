@@ -34,6 +34,7 @@ func (uc *UseCase) SendOTP(ctx context.Context, phone string) error {
 	attKey := utils.OTPAttemptsPrefix + phone // otp_attempts:{phone}
 	count, err := uc.cache.Incr(ctx, attKey).Result()
 	if err != nil {
+		logger.WithContext(ctx).Error("otp rate limit check failed", zap.String("phone", phone), zap.Error(err))
 		return apperrors.Wrap(apperrors.CodeInternal, "rate limit check failed", err)
 	}
 	if count == 1 {
@@ -51,11 +52,13 @@ func (uc *UseCase) SendOTP(ctx context.Context, phone string) error {
 	hashed := utils.HashSHA256(otp)
 	otpKey := utils.OTPKeyPrefix + phone // otp:{phone}
 	if err := uc.cache.Set(ctx, otpKey, hashed, utils.OTPTTL).Err(); err != nil {
+		logger.WithContext(ctx).Error("store otp in cache failed", zap.String("phone", phone), zap.Error(err))
 		return apperrors.Wrap(apperrors.CodeInternal, "store otp", err)
 	}
 
 	message := fmt.Sprintf("Your ShowNest OTP is %s. Valid for 5 minutes. Do not share it.", otp)
 	if err := uc.sns.SendSMS(ctx, phone, message); err != nil {
+		logger.WithContext(ctx).Error("send otp sms failed", zap.String("phone", phone), zap.Error(err))
 		return apperrors.Wrap(apperrors.CodeInternal, "send otp sms", err)
 	}
 
@@ -70,6 +73,7 @@ func (uc *UseCase) VerifyOTP(ctx context.Context, req request.VerifyOTPRequest, 
 		if err == redis.Nil {
 			return nil, apperrors.New(apperrors.CodeInvalidCredentials, "invalid or expired OTP")
 		}
+		logger.WithContext(ctx).Error("fetch otp from cache failed", zap.String("phone", req.Phone), zap.Error(err))
 		return nil, apperrors.Wrap(apperrors.CodeInternal, "fetch otp from cache", err)
 	}
 
@@ -84,6 +88,7 @@ func (uc *UseCase) VerifyOTP(ctx context.Context, req request.VerifyOTPRequest, 
 		if apperrors.HasCode(err, apperrors.CodeDBNotFound) {
 			user, err = uc.repo.CreateUser(ctx, req.Phone, utils.UserRoleCustomer)
 			if err != nil {
+				logger.WithContext(ctx).Error("create user failed", zap.String("phone", req.Phone), zap.Error(err))
 				return nil, err
 			}
 		} else {
@@ -133,6 +138,7 @@ func (uc *UseCase) RefreshToken(ctx context.Context, rawRefreshToken string) (*r
 	newExpiresAt := time.Now().Add(utils.RefreshTokenDuration)
 
 	if err := uc.repo.RotateSessionToken(ctx, session.ID, newTokenHash, newExpiresAt); err != nil {
+		logger.WithContext(ctx).Error("rotate session token failed", zap.String("sessionId", session.ID), zap.Error(err))
 		return nil, err
 	}
 
@@ -171,6 +177,7 @@ func (uc *UseCase) GetProfile(ctx context.Context, userID string) (*response.Use
 
 func (uc *UseCase) UpdateProfile(ctx context.Context, userID string, req request.UpdateProfileRequest) (*response.UserInfo, error) {
 	if err := uc.repo.UpdateUserEmail(ctx, userID, req.Email); err != nil {
+		logger.WithContext(ctx).Error("update user email failed", zap.String("userId", userID), zap.Error(err))
 		return nil, err
 	}
 	return uc.GetProfile(ctx, userID)
@@ -194,6 +201,7 @@ func (uc *UseCase) issueTokenPair(ctx context.Context, user *models.User, device
 
 	expiresAt := time.Now().Add(utils.RefreshTokenDuration)
 	if _, err := uc.repo.CreateSession(ctx, sessionID, user.ID, utils.HashSHA256(refreshToken), deviceInfo, ipAddress, expiresAt); err != nil {
+		logger.WithContext(ctx).Error("create session failed", zap.String("userId", user.ID), zap.Error(err))
 		return nil, err
 	}
 

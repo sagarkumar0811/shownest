@@ -7,6 +7,8 @@ import (
 	"github.com/shownest/catalog-service/internal/dto/request"
 	"github.com/shownest/catalog-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) CreateShowtime(c *gin.Context) {
@@ -26,6 +28,7 @@ func (h *Handler) CreateShowtime(c *gin.Context) {
 	}
 	info, err := h.usecase.CreateShowtime(c.Request.Context(), utils.MustUserID(c), uri.EventID, req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("create showtime failed", zap.String("eventId", uri.EventID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -40,6 +43,7 @@ func (h *Handler) GetShowtime(c *gin.Context) {
 	}
 	info, err := h.usecase.GetShowtime(c.Request.Context(), uri.ShowtimeID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get showtime failed", zap.String("showtimeId", uri.ShowtimeID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -54,6 +58,7 @@ func (h *Handler) GetShowtimeBasePrice(c *gin.Context) {
 	}
 	price, err := h.usecase.GetShowtimeBasePrice(c.Request.Context(), uri.ShowtimeID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get showtime base price failed", zap.String("showtimeId", uri.ShowtimeID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -68,6 +73,7 @@ func (h *Handler) ListShowtimes(c *gin.Context) {
 	}
 	infos, err := h.usecase.ListShowtimes(c.Request.Context(), uri.EventID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("list showtimes failed", zap.String("eventId", uri.EventID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -95,6 +101,7 @@ func (h *Handler) UpdateShowtime(c *gin.Context) {
 	}
 	info, err := h.usecase.UpdateShowtime(c.Request.Context(), utils.MustUserID(c), uri.ShowtimeID, req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("update showtime failed", zap.String("showtimeId", uri.ShowtimeID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}

@@ -37,6 +37,7 @@ func (uc *UseCase) CreateMerchant(ctx context.Context, userID string, req reques
 
 	merchant, err := uc.repo.CreateMerchant(ctx, userID, req.BusinessName, req.Category, req.ContactPhone, req.ContactEmail)
 	if err != nil {
+		logger.WithContext(ctx).Error("create merchant failed", zap.String("userId", userID), zap.Error(err))
 		return nil, err
 	}
 	info := mapper.ToMerchantInfo(merchant)
@@ -70,6 +71,7 @@ func (uc *UseCase) CreateVenue(ctx context.Context, userID string, req request.C
 	}
 	v, err := uc.repo.CreateVenue(ctx, merchant.ID, req.Name, req.Address, req.City, req.State, req.Pincode, req.Latitude, req.Longitude)
 	if err != nil {
+		logger.WithContext(ctx).Error("create venue failed", zap.String("merchantId", merchant.ID), zap.Error(err))
 		return nil, err
 	}
 	info := mapper.ToVenueInfo(v)
@@ -134,6 +136,7 @@ func (uc *UseCase) CreateHall(ctx context.Context, venueID, userID string, req r
 	}
 	h, err := uc.repo.CreateHall(ctx, venueID, req.Name, req.Capacity, req.HallType)
 	if err != nil {
+		logger.WithContext(ctx).Error("create hall failed", zap.String("venueId", venueID), zap.Error(err))
 		return nil, err
 	}
 	info := mapper.ToHallInfo(h)
@@ -173,6 +176,7 @@ func (uc *UseCase) RequestDocumentUploadURL(ctx context.Context, userID, docType
 	ttl := time.Duration(utils.DocumentUploadURLTTL) * time.Minute
 	uploadURL, err := uc.s3.PresignPutURL(ctx, s3Key, ttl)
 	if err != nil {
+		logger.WithContext(ctx).Error("presign document upload url failed", zap.String("merchantId", merchant.ID), zap.Error(err))
 		return nil, apperrors.Wrap(apperrors.CodeInternal, "generate upload url", err)
 	}
 	return &response.UploadURLResponse{
@@ -195,6 +199,7 @@ func (uc *UseCase) ConfirmDocument(ctx context.Context, userID string, req reque
 
 	d, err := uc.repo.CreateDocument(ctx, merchant.ID, req.DocumentType, req.S3Key)
 	if err != nil {
+		logger.WithContext(ctx).Error("confirm document failed", zap.String("merchantId", merchant.ID), zap.Error(err))
 		return nil, err
 	}
 

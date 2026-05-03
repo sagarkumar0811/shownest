@@ -41,6 +41,7 @@ func (uc *UseCase) CreateEvent(ctx context.Context, userID string, req request.C
 		req.Category, req.Language, req.DurationMinutes, req.Rating,
 	)
 	if err != nil {
+		logger.WithContext(ctx).Error("create event failed", zap.String("userId", userID), zap.Error(err))
 		return nil, err
 	}
 	info := mapper.ToEventInfo(e)
@@ -59,6 +60,7 @@ func (uc *UseCase) GetEvent(ctx context.Context, eventID string) (*response.Even
 
 	e, err := uc.repo.GetEventByID(ctx, eventID)
 	if err != nil {
+		logger.WithContext(ctx).Error("get event failed", zap.String("eventId", eventID), zap.Error(err))
 		return nil, err
 	}
 	info := mapper.ToEventInfo(e)
@@ -74,6 +76,7 @@ func (uc *UseCase) GetEvent(ctx context.Context, eventID string) (*response.Even
 func (uc *UseCase) ListEvents(ctx context.Context, req request.ListEventsRequest) ([]response.EventInfo, error) {
 	events, err := uc.repo.ListEvents(ctx, req.Category, req.MerchantID, req.Status)
 	if err != nil {
+		logger.WithContext(ctx).Error("list events failed", zap.Error(err))
 		return nil, err
 	}
 	return mapper.ToEventInfoList(events), nil
@@ -114,6 +117,7 @@ func (uc *UseCase) UpdateEvent(ctx context.Context, userID, eventID string, req 
 
 	e, err := uc.repo.UpdateEvent(ctx, eventID, fields)
 	if err != nil {
+		logger.WithContext(ctx).Error("update event failed", zap.String("eventId", eventID), zap.Error(err))
 		return nil, err
 	}
 
@@ -153,10 +157,12 @@ func (uc *UseCase) CreateShowtime(ctx context.Context, userID, eventID string, r
 
 	s, err := uc.repo.CreateShowtimeInTx(ctx, tx, eventID, req.HallID, req.StartTime, req.EndTime, req.BasePrice)
 	if err != nil {
+		logger.WithContext(ctx).Error("create showtime failed", zap.String("eventId", eventID), zap.Error(err))
 		return nil, err
 	}
 
 	if err := tx.Commit(ctx); err != nil {
+		logger.WithContext(ctx).Error("commit create showtime failed", zap.String("eventId", eventID), zap.Error(err))
 		return nil, apperrors.Wrap(apperrors.CodeDBError, "commit transaction", err)
 	}
 
@@ -227,6 +233,7 @@ func (uc *UseCase) UpdateShowtime(ctx context.Context, userID, showtimeID string
 
 	updated, err := uc.repo.UpdateShowtimeStatus(ctx, showtimeID, *req.Status)
 	if err != nil {
+		logger.WithContext(ctx).Error("update showtime status failed", zap.String("showtimeId", showtimeID), zap.Error(err))
 		return nil, err
 	}
 
@@ -254,6 +261,7 @@ func (uc *UseCase) RequestMediaUploadURL(ctx context.Context, userID, eventID, m
 	ttl := time.Duration(utils.MediaUploadURLTTL) * time.Minute
 	uploadURL, err := uc.s3.PresignPutURL(ctx, s3Key, ttl)
 	if err != nil {
+		logger.WithContext(ctx).Error("presign media upload url failed", zap.String("eventId", eventID), zap.Error(err))
 		return nil, apperrors.Wrap(apperrors.CodeInternal, "generate upload url", err)
 	}
 	return &response.MediaUploadURLResponse{
@@ -274,6 +282,7 @@ func (uc *UseCase) ConfirmMedia(ctx context.Context, userID, eventID string, req
 
 	m, err := uc.repo.CreateMedia(ctx, eventID, req.MediaType, req.S3Key)
 	if err != nil {
+		logger.WithContext(ctx).Error("confirm media failed", zap.String("eventId", eventID), zap.Error(err))
 		return nil, err
 	}
 	info := mapper.ToMediaInfo(m)

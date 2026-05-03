@@ -5,8 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
 	"github.com/shownest/user-service/internal/dto/request"
 	"github.com/shownest/user-service/internal/utils"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) SendOTP(c *gin.Context) {
@@ -22,6 +24,7 @@ func (h *Handler) SendOTP(c *gin.Context) {
 	}
 
 	if err := h.usecase.SendOTP(c.Request.Context(), req.Phone); err != nil {
+		logger.WithContext(c.Request.Context()).Error("send otp failed", zap.String("phone", req.Phone), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -43,6 +46,7 @@ func (h *Handler) VerifyOTP(c *gin.Context) {
 
 	resp, err := h.usecase.VerifyOTP(c.Request.Context(), req, utils.UserAgent(c), utils.ClientIP(c))
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("verify otp failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -59,6 +63,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 
 	resp, err := h.usecase.RefreshToken(c.Request.Context(), req.RefreshToken)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("refresh token failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}

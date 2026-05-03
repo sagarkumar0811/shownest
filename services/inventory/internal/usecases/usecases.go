@@ -151,6 +151,7 @@ func (uc *UseCase) LockSeats(ctx context.Context, showtimeID, userID string, req
 		// This is the first line of defence against concurrent seat selection.
 		res, err := uc.cache.SetArgs(ctx, key, userID, redis.SetArgs{TTL: lockTTL, Mode: "NX"}).Result()
 		if err != nil {
+			logger.WithContext(ctx).Error("redis lock seat failed", zap.String("showtimeId", showtimeID), zap.String("seatId", seatID), zap.Error(err))
 			return nil, apperrors.Wrap(apperrors.CodeInternal, "redis lock seat", err)
 		}
 		if res != "OK" {
@@ -203,6 +204,7 @@ func (uc *UseCase) ReleaseSeats(ctx context.Context, showtimeID, userID string, 
 		}
 
 		if err := uc.repo.ReleaseShowtimeSeat(ctx, showtimeID, seatID, userID); err != nil {
+			logger.WithContext(ctx).Error("release showtime seat failed", zap.String("showtimeId", showtimeID), zap.String("seatId", seatID), zap.Error(err))
 			return err
 		}
 	}
@@ -220,6 +222,7 @@ func (uc *UseCase) ConfirmSeats(ctx context.Context, showtimeID, userID string, 
 	}
 
 	if err := uc.repo.BookShowtimeSeats(ctx, showtimeID, userID, req.SeatIDs); err != nil {
+		logger.WithContext(ctx).Error("confirm seats failed", zap.String("showtimeId", showtimeID), zap.String("userId", userID), zap.Error(err))
 		return err
 	}
 

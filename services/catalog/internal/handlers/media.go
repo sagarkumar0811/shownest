@@ -7,6 +7,8 @@ import (
 	"github.com/shownest/catalog-service/internal/dto/request"
 	"github.com/shownest/catalog-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) RequestMediaUploadURL(c *gin.Context) {
@@ -26,6 +28,7 @@ func (h *Handler) RequestMediaUploadURL(c *gin.Context) {
 	}
 	resp, err := h.usecase.RequestMediaUploadURL(c.Request.Context(), utils.MustUserID(c), uri.EventID, req.MediaType)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("request media upload url failed", zap.String("eventId", uri.EventID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -49,6 +52,7 @@ func (h *Handler) ConfirmMedia(c *gin.Context) {
 	}
 	info, err := h.usecase.ConfirmMedia(c.Request.Context(), utils.MustUserID(c), uri.EventID, req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("confirm media failed", zap.String("eventId", uri.EventID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -63,6 +67,7 @@ func (h *Handler) ListMedia(c *gin.Context) {
 	}
 	infos, err := h.usecase.ListMedia(c.Request.Context(), uri.EventID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("list media failed", zap.String("eventId", uri.EventID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}

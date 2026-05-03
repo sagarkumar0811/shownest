@@ -7,6 +7,8 @@ import (
 	"github.com/shownest/merchant-service/internal/dto/request"
 	"github.com/shownest/merchant-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) RequestDocumentUploadURL(c *gin.Context) {
@@ -21,6 +23,7 @@ func (h *Handler) RequestDocumentUploadURL(c *gin.Context) {
 	}
 	resp, err := h.usecase.RequestDocumentUploadURL(c.Request.Context(), utils.MustUserID(c), req.DocumentType)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("request document upload url failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -39,6 +42,7 @@ func (h *Handler) ConfirmDocument(c *gin.Context) {
 	}
 	info, err := h.usecase.ConfirmDocument(c.Request.Context(), utils.MustUserID(c), req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("confirm document failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -48,6 +52,7 @@ func (h *Handler) ConfirmDocument(c *gin.Context) {
 func (h *Handler) ListDocuments(c *gin.Context) {
 	docs, err := h.usecase.ListDocuments(c.Request.Context(), utils.MustUserID(c))
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("list documents failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}

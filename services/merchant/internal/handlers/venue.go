@@ -7,6 +7,8 @@ import (
 	"github.com/shownest/merchant-service/internal/dto/request"
 	"github.com/shownest/merchant-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) CreateVenue(c *gin.Context) {
@@ -17,6 +19,7 @@ func (h *Handler) CreateVenue(c *gin.Context) {
 	}
 	info, err := h.usecase.CreateVenue(c.Request.Context(), utils.MustUserID(c), req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("create venue failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -26,6 +29,7 @@ func (h *Handler) CreateVenue(c *gin.Context) {
 func (h *Handler) ListMyVenues(c *gin.Context) {
 	venues, err := h.usecase.ListMyVenues(c.Request.Context(), utils.MustUserID(c))
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("list my venues failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -40,6 +44,7 @@ func (h *Handler) GetVenue(c *gin.Context) {
 	}
 	info, err := h.usecase.GetVenue(c.Request.Context(), req.VenueID, utils.MustUserID(c))
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get venue failed", zap.String("venueId", req.VenueID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -54,6 +59,7 @@ func (h *Handler) GetNearbyVenues(c *gin.Context) {
 	}
 	venues, err := h.usecase.GetNearbyVenues(c.Request.Context(), req.Latitude, req.Longitude, req.Radius)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get nearby venues failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -68,6 +74,7 @@ func (h *Handler) GetVenuesByCity(c *gin.Context) {
 	}
 	venues, err := h.usecase.GetVenuesByCity(c.Request.Context(), req.City)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get venues by city failed", zap.String("city", req.City), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}

@@ -7,6 +7,8 @@ import (
 	"github.com/shownest/merchant-service/internal/dto/request"
 	"github.com/shownest/merchant-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) CreateMerchant(c *gin.Context) {
@@ -21,6 +23,7 @@ func (h *Handler) CreateMerchant(c *gin.Context) {
 	}
 	info, err := h.usecase.CreateMerchant(c.Request.Context(), utils.MustUserID(c), req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("create merchant failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -30,6 +33,7 @@ func (h *Handler) CreateMerchant(c *gin.Context) {
 func (h *Handler) GetMyMerchant(c *gin.Context) {
 	info, err := h.usecase.GetMyMerchant(c.Request.Context(), utils.MustUserID(c))
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get my merchant failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -38,6 +42,7 @@ func (h *Handler) GetMyMerchant(c *gin.Context) {
 
 func (h *Handler) SubmitForReview(c *gin.Context) {
 	if err := h.usecase.SubmitForReview(c.Request.Context(), utils.MustUserID(c)); err != nil {
+		logger.WithContext(c.Request.Context()).Error("submit for review failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}

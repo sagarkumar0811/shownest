@@ -7,6 +7,8 @@ import (
 	"github.com/shownest/catalog-service/internal/dto/request"
 	"github.com/shownest/catalog-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) CreateEvent(c *gin.Context) {
@@ -21,6 +23,7 @@ func (h *Handler) CreateEvent(c *gin.Context) {
 	}
 	info, err := h.usecase.CreateEvent(c.Request.Context(), utils.MustUserID(c), req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("create event failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -35,6 +38,7 @@ func (h *Handler) GetEvent(c *gin.Context) {
 	}
 	info, err := h.usecase.GetEvent(c.Request.Context(), uri.EventID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get event failed", zap.String("eventId", uri.EventID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -49,6 +53,7 @@ func (h *Handler) ListEvents(c *gin.Context) {
 	}
 	infos, err := h.usecase.ListEvents(c.Request.Context(), q)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("list events failed", zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -72,6 +77,7 @@ func (h *Handler) UpdateEvent(c *gin.Context) {
 	}
 	info, err := h.usecase.UpdateEvent(c.Request.Context(), utils.MustUserID(c), uri.EventID, req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("update event failed", zap.String("eventId", uri.EventID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}

@@ -7,6 +7,8 @@ import (
 	"github.com/shownest/merchant-service/internal/dto/request"
 	"github.com/shownest/merchant-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) CreateHall(c *gin.Context) {
@@ -26,6 +28,7 @@ func (h *Handler) CreateHall(c *gin.Context) {
 	}
 	info, err := h.usecase.CreateHall(c.Request.Context(), uriReq.VenueID, utils.MustUserID(c), req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("create hall failed", zap.String("venueId", uriReq.VenueID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -40,6 +43,7 @@ func (h *Handler) ListHalls(c *gin.Context) {
 	}
 	halls, err := h.usecase.ListHalls(c.Request.Context(), uriReq.VenueID, utils.MustUserID(c))
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("list halls failed", zap.String("venueId", uriReq.VenueID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}

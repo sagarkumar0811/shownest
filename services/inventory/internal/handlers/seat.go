@@ -7,6 +7,8 @@ import (
 	"github.com/shownest/inventory-service/internal/dto/request"
 	"github.com/shownest/inventory-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	"github.com/shownest/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) CreateSeatCategory(c *gin.Context) {
@@ -22,6 +24,7 @@ func (h *Handler) CreateSeatCategory(c *gin.Context) {
 	}
 	info, err := h.usecase.CreateSeatCategory(c.Request.Context(), req, uri.HallID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("create seat category failed", zap.String("hallId", uri.HallID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -36,6 +39,7 @@ func (h *Handler) ListSeatCategories(c *gin.Context) {
 	}
 	infos, err := h.usecase.ListSeatCategories(c.Request.Context(), uri.HallID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("list seat categories failed", zap.String("hallId", uri.HallID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -59,6 +63,7 @@ func (h *Handler) BulkCreateSeats(c *gin.Context) {
 	}
 	infos, err := h.usecase.BulkCreateSeats(c.Request.Context(), uri.HallID, req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("bulk create seats failed", zap.String("hallId", uri.HallID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -73,6 +78,7 @@ func (h *Handler) ListSeats(c *gin.Context) {
 	}
 	infos, err := h.usecase.ListSeats(c.Request.Context(), uri.HallID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("list seats failed", zap.String("hallId", uri.HallID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -92,6 +98,7 @@ func (h *Handler) PublishShowtimeSeats(c *gin.Context) {
 	}
 	n, err := h.usecase.PublishShowtimeSeats(c.Request.Context(), req.ShowtimeID, uri.HallID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("publish showtime seats failed", zap.String("hallId", uri.HallID), zap.String("showtimeId", req.ShowtimeID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -106,6 +113,7 @@ func (h *Handler) ListShowtimeSeats(c *gin.Context) {
 	}
 	infos, err := h.usecase.ListShowtimeSeats(c.Request.Context(), uri.ShowtimeID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("list showtime seats failed", zap.String("showtimeId", uri.ShowtimeID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -129,6 +137,7 @@ func (h *Handler) LockSeats(c *gin.Context) {
 	}
 	result, err := h.usecase.LockSeats(c.Request.Context(), uri.ShowtimeID, utils.MustUserID(c), req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("lock seats failed", zap.String("showtimeId", uri.ShowtimeID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -151,6 +160,7 @@ func (h *Handler) ReleaseSeats(c *gin.Context) {
 		return
 	}
 	if err := h.usecase.ReleaseSeats(c.Request.Context(), uri.ShowtimeID, utils.MustUserID(c), req); err != nil {
+		logger.WithContext(c.Request.Context()).Error("release seats failed", zap.String("showtimeId", uri.ShowtimeID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -169,6 +179,7 @@ func (h *Handler) ConfirmSeats(c *gin.Context) {
 		return
 	}
 	if err := h.usecase.ConfirmSeats(c.Request.Context(), uri.ShowtimeID, utils.MustUserID(c), req); err != nil {
+		logger.WithContext(c.Request.Context()).Error("confirm seats failed", zap.String("showtimeId", uri.ShowtimeID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
@@ -188,6 +199,7 @@ func (h *Handler) GetSeatPrices(c *gin.Context) {
 	}
 	prices, err := h.usecase.GetSeatPrices(c.Request.Context(), uri.ShowtimeID, req)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get seat prices failed", zap.String("showtimeId", uri.ShowtimeID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}
