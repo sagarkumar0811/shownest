@@ -22,3 +22,11 @@ type BookingItem struct {
 	Price      float64   `db:"price"`
 	CreatedAt  time.Time `db:"created_at"`
 }
+
+type BookingStateLog struct {
+	ID         string    `db:"id"`
+	BookingID  string    `db:"booking_id"`
+	FromStatus *string   `db:"from_status"`
+	ToStatus   string    `db:"to_status"`
+	CreatedAt  time.Time `db:"created_at"`
+}

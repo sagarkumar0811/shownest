@@ -75,6 +75,17 @@ func (r *Repository) CreateBookingWithItems(ctx context.Context, userID, showtim
 		return nil, nil, apperrors.Wrap(apperrors.CodeDBError, "insert booking items", err)
 	}
 
+	logSql, logArgs, err := psql.Insert("bookings_state_log").
+		Columns("booking_id", "from_status", "to_status").
+		Values(booking.ID, nil, utils.BookingStatusPending).
+		ToSql()
+	if err != nil {
+		return nil, nil, apperrors.Wrap(apperrors.CodeInternal, "build state log query", err)
+	}
+	if _, err := tx.Exec(ctx, logSql, logArgs...); err != nil {
+		return nil, nil, apperrors.Wrap(apperrors.CodeDBError, "insert state log", err)
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return nil, nil, apperrors.Wrap(apperrors.CodeDBError, "commit create booking", err)
 	}
@@ -117,6 +128,22 @@ func (r *Repository) GetBookingItems(ctx context.Context, bookingID string) ([]m
 }
 
 func (r *Repository) UpdateBookingStatus(ctx context.Context, id, status string, qrToken *string) (*models.Booking, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "begin transaction", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Fetch current status for the audit log.
+	var current models.Booking
+	fetchSql, fetchArgs, _ := psql.Select("status").From("bookings").Where(sq.Eq{"id": id}).ToSql()
+	if err := pgxscan.Get(ctx, tx, &current, fetchSql, fetchArgs...); err != nil {
+		if pgxscan.NotFound(err) {
+			return nil, apperrors.New(apperrors.CodeDBNotFound, "booking not found")
+		}
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "fetch booking status", err)
+	}
+
 	q := psql.Update("bookings").
 		Set("status", status).
 		Where(sq.Eq{"id": id}).
@@ -126,19 +153,32 @@ func (r *Repository) UpdateBookingStatus(ctx context.Context, id, status string,
 		q = q.Set("qr_token", *qrToken)
 	}
 
-	sql, args, err := q.ToSql()
+	updateSql, updateArgs, err := q.ToSql()
 	if err != nil {
-		return nil, apperrors.Wrap(apperrors.CodeInternal, "build query", err)
+		return nil, apperrors.Wrap(apperrors.CodeInternal, "build update query", err)
 	}
 
-	rows, _ := r.db.Query(ctx, sql, args...)
+	rows, _ := tx.Query(ctx, updateSql, updateArgs...)
 	b, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[models.Booking])
 	if err != nil {
-		if pgxscan.NotFound(err) {
-			return nil, apperrors.New(apperrors.CodeDBNotFound, "booking not found")
-		}
 		return nil, apperrors.Wrap(apperrors.CodeDBError, "update booking status", err)
 	}
+
+	logSql, logArgs, err := psql.Insert("bookings_state_log").
+		Columns("booking_id", "from_status", "to_status").
+		Values(id, current.Status, status).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeInternal, "build state log query", err)
+	}
+	if _, err := tx.Exec(ctx, logSql, logArgs...); err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "insert state log", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "commit update booking status", err)
+	}
+
 	return &b, nil
 }
 

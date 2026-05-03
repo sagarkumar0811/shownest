@@ -31,6 +31,16 @@ CREATE TABLE IF NOT EXISTS booking_items (
 CREATE INDEX IF NOT EXISTS idx_booking_items_booking_id ON booking_items (booking_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_booking_seat ON booking_items (booking_id, seat_id);
 
+CREATE TABLE IF NOT EXISTS bookings_state_log (
+    id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    booking_id  UUID        NOT NULL REFERENCES bookings(id),
+    from_status VARCHAR(20),
+    to_status   VARCHAR(20) NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_state_log_booking_id ON bookings_state_log (booking_id);
+
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -45,3 +55,4 @@ CREATE TRIGGER trg_bookings_updated_at
 
 GRANT ALL PRIVILEGES ON ALL TABLES    IN SCHEMA public TO booking_service;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO booking_service;
+GRANT USAGE ON SCHEMA public TO booking_service;
