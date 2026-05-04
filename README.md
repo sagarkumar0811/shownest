@@ -1,54 +1,25 @@
-# ShowNest
+# Shownest
 
-ShowNest is an event discovery and ticket booking platform that allows users to explore shows, view venues, and reserve seats.  
-The project focuses on building a scalable system for managing events, show schedules, and real-time ticket availability.
+A Go microservices backend for a full-stack event and venue booking platform. The system allows users to discover shows, browse venues, lock seats in real time, and complete bookings with QR-based tickets. Merchants can onboard, manage their venues and halls, publish events with showtimes, configure seating layouts, and apply dynamic pricing and promotional offers.
 
-## PostgreSQL Installation
+## Implemented
 
-### Installation Details
+- **user** — handles user registration, login, OTP-based phone verification, JWT session management, and profile updates
+- **merchant** — manages merchant onboarding, document submission, venue and hall creation, and hall configuration (capacity, seating type)
+- **catalog** — stores and serves events (shows, concerts, sports), showtimes, and associated media; the source of truth for what is playing, where, and when
+- **inventory** — manages seat definitions per hall, seat categories with pricing, real-time seat locking with Redis-backed TTLs, and seat availability queries
+- **booking** — orchestrates the full booking lifecycle: seat reservation, payment handoff, confirmation, cancellation, and QR ticket generation with expiry
+- **pricing** — computes final ticket prices by applying dynamic pricing rules and time-based surge logic, validates and redeems coupons, and manages convenience fee configuration
 
-| Component | Path/Value |
-|-----------|------------|
-| **Installation Directory** | `/Library/PostgreSQL/18` |
-| **Server Installation Directory** | `/Library/PostgreSQL/18` |
-| **Data Directory** | `/Library/PostgreSQL/18/data` |
-| **Database Port** | `5433` |
-| **Database Superuser** | `postgres` |
-| **Operating System Account** | `postgres` |
-| **Database Service** | `postgresql-18` |
-| **Command Line Tools** | `/Library/PostgreSQL/18` |
-| **pgAdmin4** | `/Library/PostgreSQL/18/pgAdmin 4` |
-| **Stack Builder** | `/Library/PostgreSQL/18` |
-| **Installation Log** | `/tmp/install-postgresql.log` |
+## Databases
 
-## Database Architecture
+Each service owns an isolated PostgreSQL database. Migrations live under `migrations/<service>/schema.sql`.
 
-```
-PostgreSQL Server
-│
-├── postgres (admin)
-│
-├── user (database)
-│    └── owned by user_service
-│
-├── booking (database)
-│    └── owned by booking_service
-│
-├── catalog (database)
-│    └── owned by catalog_service
-│
-├── merchant (database)
-│    └── owned by merchant_service
-│
-├── payment (database)
-│    └── owned by payment_service
-│
-├── seat (database)
-│    └── owned by seat_service
-│
-├── search (database)
-│    └── owned by search_service
-│
-└── notification (database)
-     └── owned by notification_service
-```
+| Service | Database | Owner | Superuser |
+|---|---|---|---|
+| user | `user` | `user_service` | `postgres` |
+| merchant | `merchant` | `merchant_service` | `postgres` |
+| catalog | `catalog` | `catalog_service` | `postgres` |
+| inventory | `inventory` | `inventory_service` | `postgres` |
+| booking | `booking` | `booking_service` | `postgres` |
+| pricing | `pricing` | `pricing_service` | `postgres` |
