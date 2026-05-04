@@ -205,3 +205,19 @@ func (h *Handler) GetSeatPrices(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, prices)
 }
+
+func (h *Handler) GetShowtimeOccupancy(c *gin.Context) {
+	var uri request.ShowtimeIDRequest
+	if err := c.ShouldBindUri(&uri); err != nil {
+		utils.WriteError(c, apperrors.New(apperrors.CodeInvalidArgument, err.Error()))
+		return
+	}
+
+	result, err := h.usecase.GetShowtimeOccupancy(c.Request.Context(), uri.ShowtimeID)
+	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get showtime occupancy failed", zap.String("showtimeId", uri.ShowtimeID), zap.Error(err))
+		utils.WriteError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}

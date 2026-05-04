@@ -344,6 +344,26 @@ func (r *Repository) BeginTx(ctx context.Context) (pgx.Tx, error) {
 	return tx, nil
 }
 
+func (r *Repository) GetShowtimeOccupancy(ctx context.Context, showtimeID string) (*models.OccupancyStats, error) {
+	query, args, err := psql.
+		Select(
+			"COUNT(*) AS total_seats",
+			"COUNT(*) FILTER (WHERE status = 'booked') AS booked_seats",
+		).
+		From("showtime_seats").
+		Where(sq.Eq{"showtime_id": showtimeID}).
+		ToSql()
+	if err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeInternal, "build occupancy query", err)
+	}
+
+	var stats models.OccupancyStats
+	if err := pgxscan.Get(ctx, r.db, &stats, query, args...); err != nil {
+		return nil, apperrors.Wrap(apperrors.CodeDBError, "get showtime occupancy", err)
+	}
+	return &stats, nil
+}
+
 func nullFloat(v *float64) interface{} {
 	if v == nil {
 		return nil

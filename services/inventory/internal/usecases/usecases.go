@@ -249,3 +249,21 @@ func (uc *UseCase) GetSeatPrices(ctx context.Context, showtimeID string, req req
 	}
 	return result, nil
 }
+
+func (uc *UseCase) GetShowtimeOccupancy(ctx context.Context, showtimeID string) (*response.OccupancyInfo, error) {
+	stats, err := uc.repo.GetShowtimeOccupancy(ctx, showtimeID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pct float64
+	if stats.TotalSeats > 0 {
+		pct = float64(stats.BookedSeats) / float64(stats.TotalSeats) * 100
+	}
+
+	return &response.OccupancyInfo{
+		TotalSeats:       stats.TotalSeats,
+		BookedSeats:      stats.BookedSeats,
+		OccupancyPercent: pct,
+	}, nil
+}

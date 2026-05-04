@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	pkgconfig "github.com/shownest/pkg/config"
+	"github.com/shownest/pkg/config"
 )
 
 type ExternalService struct {
@@ -20,8 +20,8 @@ type Config struct {
 	ExternalService ExternalService `json:"externalService"`
 }
 
-func Load(ctx context.Context, provider pkgconfig.ConfigProvider) (*Config, error) {
-	raw, err := provider.Get(ctx, pkgconfig.ServiceConfig)
+func Load(ctx context.Context, provider config.ConfigProvider) (*Config, error) {
+	raw, err := provider.Get(ctx, config.ServiceConfig)
 	if err != nil {
 		return nil, fmt.Errorf("config: get service config: %w", err)
 	}

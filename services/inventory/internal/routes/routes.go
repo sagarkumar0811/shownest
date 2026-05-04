@@ -55,6 +55,7 @@ func InitRoutes(config Config) error {
 		internal.POST("/showtimes/:showtimeId/seats/confirm", config.Handler.ConfirmSeats)
 		internal.POST("/showtimes/:showtimeId/seats/release", config.Handler.ReleaseSeats)
 		internal.POST("/showtimes/:showtimeId/seats/prices", config.Handler.GetSeatPrices)
+		internal.GET("/showtimes/:showtimeId/occupancy", config.Handler.GetShowtimeOccupancy)
 	}
 
 	addr := fmt.Sprintf(":%s", config.Port)

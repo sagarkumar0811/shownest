@@ -45,3 +45,9 @@ type SeatPriceInfo struct {
 	CategoryID      string `json:"categoryId"`
 	PriceMultiplier string `json:"priceMultiplier"`
 }
+
+type OccupancyInfo struct {
+	TotalSeats       int     `json:"totalSeats"`
+	BookedSeats      int     `json:"bookedSeats"`
+	OccupancyPercent float64 `json:"occupancyPercent"`
+}

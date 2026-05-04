@@ -41,3 +41,8 @@ type SeatPrice struct {
 	CategoryID      string `db:"category_id"`
 	PriceMultiplier string `db:"price_multiplier"`
 }
+
+type OccupancyStats struct {
+	TotalSeats  int `db:"total_seats"`
+	BookedSeats int `db:"booked_seats"`
+}
