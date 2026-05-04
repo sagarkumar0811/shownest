@@ -11,6 +11,7 @@ import (
 	"github.com/shownest/catalog-service/internal/models"
 	"github.com/shownest/catalog-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	pkgutils "github.com/shownest/pkg/utils"
 )
 
 var psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
@@ -42,8 +43,8 @@ func (r *Repository) CreateEvent(ctx context.Context, userID, merchantID, title,
 		Columns("user_id", "merchant_id", "title", "description", "category", "language", "duration_minutes", "rating").
 		Values(
 			userID, merchantID, title,
-			nullStr(description), category, nullStr(language),
-			durationMins, nullStr(rating),
+			pkgutils.NullStr(description), category, pkgutils.NullStr(language),
+			durationMins, pkgutils.NullStr(rating),
 		).
 		Suffix("RETURNING " + utils.JoinColumns(eventColumns))
 
@@ -103,7 +104,7 @@ func (r *Repository) ListEvents(ctx context.Context, category, merchantID, statu
 	return events, nil
 }
 
-func (r *Repository) UpdateEvent(ctx context.Context, id string, fields map[string]interface{}) (*models.Event, error) {
+func (r *Repository) UpdateEvent(ctx context.Context, id string, fields map[string]any) (*models.Event, error) {
 	q := psql.Update("events").Where(sq.Eq{"id": id}).Where("deleted_at IS NULL")
 	for k, v := range fields {
 		q = q.Set(k, v)
@@ -275,11 +276,4 @@ func (r *Repository) GetMediaByEventID(ctx context.Context, eventID string) ([]m
 		return nil, apperrors.Wrap(apperrors.CodeDBError, "get media by event id", err)
 	}
 	return media, nil
-}
-
-func nullStr(s string) interface{} {
-	if s == "" {
-		return nil
-	}
-	return s
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/shownest/inventory-service/internal/models"
 	"github.com/shownest/inventory-service/internal/utils"
 	apperrors "github.com/shownest/pkg/errors"
+	pkgutils "github.com/shownest/pkg/utils"
 )
 
 var psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
@@ -95,7 +96,7 @@ func (r *Repository) GetSeatCategoryByID(ctx context.Context, id string) (*model
 func (r *Repository) CreateSeat(ctx context.Context, hallID, categoryID, row string, number int, x, y *float64) (*models.Seat, error) {
 	sql, args, err := psql.Insert("seats").
 		Columns("hall_id", "category_id", "row", "number", "x_position", "y_position").
-		Values(hallID, categoryID, row, number, nullFloat(x), nullFloat(y)).
+		Values(hallID, categoryID, row, number, pkgutils.NullFloat(x), pkgutils.NullFloat(y)).
 		Suffix("RETURNING " + utils.JoinColumns(seatColumns)).
 		ToSql()
 	if err != nil {
@@ -118,7 +119,7 @@ func (r *Repository) BulkCreateSeats(ctx context.Context, hallID string, seats [
 }) ([]models.Seat, error) {
 	q := psql.Insert("seats").Columns("hall_id", "category_id", "row", "number", "x_position", "y_position")
 	for _, s := range seats {
-		q = q.Values(hallID, s.CategoryID, s.Row, s.Number, nullFloat(s.X), nullFloat(s.Y))
+		q = q.Values(hallID, s.CategoryID, s.Row, s.Number, pkgutils.NullFloat(s.X), pkgutils.NullFloat(s.Y))
 	}
 	q = q.Suffix("RETURNING " + utils.JoinColumns(seatColumns))
 
@@ -312,18 +313,13 @@ func (r *Repository) BookShowtimeSeats(ctx context.Context, showtimeID, userID s
 }
 
 func (r *Repository) GetSeatPrices(ctx context.Context, showtimeID string, seatIDs []string) ([]models.SeatPrice, error) {
-	ifaces := make([]interface{}, len(seatIDs))
-	for i, id := range seatIDs {
-		ifaces[i] = id
-	}
-
 	sql, args, err := psql.
 		Select("ss.seat_id", "s.category_id", "sc.price_multiplier").
 		From("showtime_seats ss").
 		Join("seats s ON s.id = ss.seat_id").
 		Join("seat_categories sc ON sc.id = s.category_id").
 		Where(sq.Eq{"ss.showtime_id": showtimeID}).
-		Where(sq.Eq{"ss.seat_id": ifaces}).
+		Where(sq.Eq{"ss.seat_id": seatIDs}).
 		ToSql()
 	if err != nil {
 		return nil, apperrors.Wrap(apperrors.CodeInternal, "build query", err)
@@ -362,11 +358,4 @@ func (r *Repository) GetShowtimeOccupancy(ctx context.Context, showtimeID string
 		return nil, apperrors.Wrap(apperrors.CodeDBError, "get showtime occupancy", err)
 	}
 	return &stats, nil
-}
-
-func nullFloat(v *float64) interface{} {
-	if v == nil {
-		return nil
-	}
-	return *v
 }

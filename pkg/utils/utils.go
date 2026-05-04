@@ -43,6 +43,20 @@ func JoinColumns(columns []string) string {
 	return sb.String()
 }
 
+func NullFloat(v *float64) any {
+	if v == nil {
+		return nil
+	}
+	return *v
+}
+
+func NullStr(s string) any {
+	if s == "" {
+		return nil
+	}
+	return s
+}
+
 func MustUserID(c *gin.Context) string {
 	return c.MustGet("userId").(string)
 }

@@ -85,6 +85,7 @@ HTTP error responses are written via `pkg/utils.WriteError(c, err)`.
 - No extra error handling for impossible cases — validate only at system boundaries
 - Do not add docstrings or type annotations to code you did not change
 - Do not refactor or "improve" code outside the scope of the task
+- Prefer concrete types and proper structs over `any`; only use `any` (never `interface{}`) when a typed alternative is genuinely not possible
 
 ## Background Jobs
 

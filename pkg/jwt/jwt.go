@@ -116,7 +116,7 @@ func (s *Service) ValidateRefreshToken(tokenString string) (*Claims, error) {
 
 // validateToken is a helper function to validate a token with the given secret and return its claims.
 func (s *Service) validateToken(tokenString, secret string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrInvalidSigningMethod
 		}
