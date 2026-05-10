@@ -6,10 +6,5 @@ use (
 	./services/catalog
 	./services/inventory
 	./services/merchant
-	./services/notification
-	./services/payment
-	./services/pricing
-	./services/reporting
-	./services/search
 	./services/user
 )
