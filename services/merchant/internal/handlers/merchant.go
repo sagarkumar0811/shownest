@@ -44,6 +44,7 @@ func (h *Handler) GetMerchantByUserID(c *gin.Context) {
 	userID := c.Param("userId")
 	info, err := h.usecase.GetMyMerchant(c.Request.Context(), userID)
 	if err != nil {
+		logger.WithContext(c.Request.Context()).Error("get merchant by user ID failed", zap.String("userId", userID), zap.Error(err))
 		utils.WriteError(c, err)
 		return
 	}

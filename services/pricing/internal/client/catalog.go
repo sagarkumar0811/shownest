@@ -32,8 +32,9 @@ type ShowtimeInfo struct {
 }
 
 type EventInfo struct {
-	ID       string `json:"id"`
-	Category string `json:"category"`
+	ID         string `json:"id"`
+	MerchantID string `json:"merchantId"`
+	Category   string `json:"category"`
 }
 
 func (c *CatalogClient) GetShowtime(ctx context.Context, showtimeID string) (*ShowtimeInfo, error) {
