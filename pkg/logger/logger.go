@@ -89,7 +89,9 @@ func initLogger(cfg Config) error {
 		}
 
 		if _, err := os.Stat(logsDir); os.IsNotExist(err) {
-			return fmt.Errorf("logs directory does not exist: %s", logsDir)
+			if err := os.MkdirAll(logsDir, 0755); err != nil {
+				return fmt.Errorf("failed to create logs directory: %w", err)
+			}
 		}
 
 		dateStr := time.Now().Format(config.DateFormat)
