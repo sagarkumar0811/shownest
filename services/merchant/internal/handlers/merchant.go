@@ -40,6 +40,16 @@ func (h *Handler) GetMyMerchant(c *gin.Context) {
 	c.JSON(http.StatusOK, info)
 }
 
+func (h *Handler) GetMerchantByUserID(c *gin.Context) {
+	userID := c.Param("userId")
+	info, err := h.usecase.GetMyMerchant(c.Request.Context(), userID)
+	if err != nil {
+		utils.WriteError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"id": info.ID})
+}
+
 func (h *Handler) SubmitForReview(c *gin.Context) {
 	if err := h.usecase.SubmitForReview(c.Request.Context(), utils.MustUserID(c)); err != nil {
 		logger.WithContext(c.Request.Context()).Error("submit for review failed", zap.Error(err))
